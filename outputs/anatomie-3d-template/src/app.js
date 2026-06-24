@@ -17,6 +17,9 @@ const resetView = document.querySelector("#resetView");
 const separationSlider = document.querySelector("#separationSlider");
 const opacitySlider = document.querySelector("#opacitySlider");
 const speedSlider = document.querySelector("#speedSlider");
+const storySteps = [...document.querySelectorAll(".story-step")];
+const progressFill = document.querySelector("#progressFill");
+const progressLabel = document.querySelector("#progressLabel");
 
 const layerConfig = {
   skin: {
@@ -63,9 +66,55 @@ const state = {
   separation: Number(separationSlider.value),
   globalOpacity: Number(opacitySlider.value),
   speed: Number(speedSlider.value),
+  scrollProgress: 0,
+  scrollRotation: -0.4,
+  spin: 0,
   pointer: new THREE.Vector2(-10, -10),
   selected: null
 };
+
+const scrollStops = [
+  {
+    p: 0,
+    separation: 0,
+    opacity: 0.74,
+    rotation: -0.62,
+    camera: new THREE.Vector3(2.8, 1.2, 5.2),
+    target: new THREE.Vector3(0, 0.12, 0)
+  },
+  {
+    p: 0.22,
+    separation: 0.2,
+    opacity: 0.84,
+    rotation: 0.42,
+    camera: new THREE.Vector3(2.15, 1.6, 4.35),
+    target: new THREE.Vector3(0, 0.56, 0)
+  },
+  {
+    p: 0.46,
+    separation: 0.52,
+    opacity: 0.92,
+    rotation: 1.18,
+    camera: new THREE.Vector3(3.45, 0.46, 4.0),
+    target: new THREE.Vector3(0.04, -0.12, 0)
+  },
+  {
+    p: 0.7,
+    separation: 0.74,
+    opacity: 0.94,
+    rotation: 2.04,
+    camera: new THREE.Vector3(2.2, 1.0, 3.7),
+    target: new THREE.Vector3(0, 0.22, 0.04)
+  },
+  {
+    p: 1,
+    separation: 0.9,
+    opacity: 1,
+    rotation: 2.78,
+    camera: new THREE.Vector3(3.05, 1.36, 4.75),
+    target: new THREE.Vector3(0, 0.08, 0)
+  }
+];
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#111214");
@@ -89,6 +138,9 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
+controls.enablePan = false;
+controls.enableZoom = false;
+controls.rotateSpeed = 0.48;
 controls.minDistance = 2.4;
 controls.maxDistance = 8.5;
 controls.target.set(0, 0.08, 0);
@@ -150,6 +202,7 @@ buildVesselLayer();
 buildScanPlane();
 createLabels();
 loadValidatedManifest();
+handleScroll();
 updateLayerState();
 setTimeout(() => loadingState.classList.add("is-hidden"), 420);
 
@@ -230,7 +283,70 @@ function buildInterface() {
   });
 
   canvas.addEventListener("click", pickStructure);
+  window.addEventListener("scroll", handleScroll, { passive: true });
   window.addEventListener("resize", resize);
+}
+
+function handleScroll() {
+  const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+  state.scrollProgress = THREE.MathUtils.clamp(window.scrollY / maxScroll, 0, 1);
+  if (progressFill) progressFill.style.width = `${Math.round(state.scrollProgress * 100)}%`;
+  updateActiveStory();
+}
+
+function updateActiveStory() {
+  if (!storySteps.length) return;
+  const center = window.innerHeight * 0.48;
+  let active = storySteps[0];
+  let nearest = Number.POSITIVE_INFINITY;
+
+  storySteps.forEach((step) => {
+    const rect = step.getBoundingClientRect();
+    const distance = Math.abs(rect.top + rect.height * 0.34 - center);
+    if (distance < nearest) {
+      nearest = distance;
+      active = step;
+    }
+  });
+
+  storySteps.forEach((step) => step.classList.toggle("is-active", step === active));
+  if (progressLabel) progressLabel.textContent = active.dataset.stage || "Animation";
+}
+
+function scrollPose(progress) {
+  for (let i = 0; i < scrollStops.length - 1; i += 1) {
+    const start = scrollStops[i];
+    const end = scrollStops[i + 1];
+    if (progress <= end.p) {
+      const local = easeInOut((progress - start.p) / (end.p - start.p));
+      return {
+        separation: THREE.MathUtils.lerp(start.separation, end.separation, local),
+        opacity: THREE.MathUtils.lerp(start.opacity, end.opacity, local),
+        rotation: THREE.MathUtils.lerp(start.rotation, end.rotation, local),
+        camera: start.camera.clone().lerp(end.camera, local),
+        target: start.target.clone().lerp(end.target, local)
+      };
+    }
+  }
+
+  const last = scrollStops[scrollStops.length - 1];
+  return {
+    separation: last.separation,
+    opacity: last.opacity,
+    rotation: last.rotation,
+    camera: last.camera.clone(),
+    target: last.target.clone()
+  };
+}
+
+function easeOut(value) {
+  const t = THREE.MathUtils.clamp(value, 0, 1);
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function easeInOut(value) {
+  const t = THREE.MathUtils.clamp(value, 0, 1);
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 function buildLights() {
@@ -785,10 +901,26 @@ function render() {
   const elapsed = clock.getElapsedTime();
   const delta = clock.getDelta();
   const speed = state.speed;
+  const intro = easeOut(elapsed / 2.15);
+  const pose = scrollPose(state.scrollProgress);
+
+  state.separation = pose.separation;
+  state.globalOpacity = pose.opacity;
+  state.scrollRotation = pose.rotation;
+  separationSlider.value = state.separation.toFixed(2);
+  opacitySlider.value = state.globalOpacity.toFixed(2);
+  updateLayerState();
 
   if (state.autoRotate) {
-    anatomyRoot.rotation.y += delta * 0.22 * speed;
+    state.spin += delta * 0.18 * speed;
   }
+
+  anatomyRoot.rotation.y = state.scrollRotation + state.spin + (1 - intro) * -1.85;
+  anatomyRoot.scale.setScalar(THREE.MathUtils.lerp(0.08, 1, intro));
+  anatomyRoot.position.y = THREE.MathUtils.lerp(-1.1, 0, intro);
+
+  camera.position.lerp(pose.camera, 0.08);
+  controls.target.lerp(pose.target, 0.08);
 
   if (state.tour) {
     const value = 0.44 + Math.sin(elapsed * 0.75 * speed) * 0.3;
@@ -803,6 +935,7 @@ function render() {
   });
 
   if (scanPlane) {
+    scanPlane.visible = state.scrollProgress > 0.28 || state.tour;
     scanPlane.position.x = Math.sin(elapsed * 0.7 * speed) * 0.46;
     scanPlane.material.opacity = 0.08 + Math.sin(elapsed * 1.4 * speed) * 0.03;
   }
@@ -826,6 +959,7 @@ function updateLabels() {
     const pos = marker.getWorldPosition(new THREE.Vector3()).project(camera);
     const visible = pos.z < 1;
     node.style.display = visible ? "block" : "none";
+    node.style.opacity = state.scrollProgress > 0.12 ? "1" : "0";
     node.style.left = `${(pos.x * 0.5 + 0.5) * width}px`;
     node.style.top = `${(-pos.y * 0.5 + 0.5) * height}px`;
   });
