@@ -462,6 +462,18 @@ input[type="range"] {
   font-size: 0.86rem;
 }
 
+.has-startup-error .loader {
+  border-top-color: var(--accent-red);
+  animation-duration: 1.8s;
+}
+
+.has-startup-error .loading p {
+  width: min(360px, calc(100vw - 48px));
+  color: #ffd8d8;
+  line-height: 1.42;
+  text-align: center;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
