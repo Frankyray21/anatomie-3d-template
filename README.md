@@ -1,6 +1,6 @@
 # Atlas anatomique 3D anime
 
-Template Three.js pour presenter le corps humain en couches: os, muscles, tendons, nerfs, vaisseaux et peau translucide.
+Experience Three.js Machines Roger International pour presenter le corps humain en ouverture animee, puis en couches synchronisees au scroll: os, muscles, tendons, nerfs, vaisseaux et peau translucide.
 
 ## Lancer
 
@@ -19,6 +19,14 @@ http://localhost:4173/
 ```
 
 Le template importe Three.js depuis un CDN. Il faut donc une connexion Internet au premier chargement, sauf si vous remplacez les imports par des fichiers locaux.
+
+## Deploiement
+
+La page publique GitHub Pages sert la version de production depuis la branche `gh-pages`.
+
+```text
+https://frankyray21.github.io/anatomie-3d-template/
+```
 
 ## Fidelite scientifique
 
@@ -49,4 +57,4 @@ Le code charge automatiquement `assets/anatomy-manifest.json` s'il existe. Si `r
 
 Si vous utilisez BodyParts3D, gardez l'attribution demandee par la licence:
 
-`BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International`
+`BodyParts3D, (c) The Database Center for Life Science licensed under CC Attribution 4.0 International`

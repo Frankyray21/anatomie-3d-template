@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Atlas anatomique 3D anime</title>
+    <title>Machines Roger International | Anatomie 3D</title>
     <link rel="stylesheet" href="./styles.css" />
     <script type="importmap">
       {
@@ -15,8 +15,25 @@
     </script>
   </head>
   <body>
+    <header class="brand-header">
+      <a class="brand-mark" href="#ouverture" aria-label="Machines Roger International">
+        <img src="./assets/img/machines-roger-logo.png" alt="Machines Roger International" />
+        <span>
+          <strong>Machines Roger International</strong>
+          <small>Visualisation anatomique 3D</small>
+        </span>
+      </a>
+      <div class="brand-status">
+        <span id="progressLabel">Ouverture</span>
+        <span class="status-dot" aria-hidden="true"></span>
+      </div>
+    </header>
+
     <main class="app-shell">
-      <canvas id="scene" aria-label="Vue 3D animee du corps humain"></canvas>
+      <div class="scene-stage">
+        <canvas id="scene" aria-label="Vue 3D animee du corps humain"></canvas>
+        <div class="vignette" aria-hidden="true"></div>
+      </div>
 
       <section class="topbar" aria-label="Commandes principales">
         <button class="icon-button is-active" id="rotateToggle" title="Rotation automatique" aria-label="Rotation automatique">
@@ -30,9 +47,51 @@
         </button>
       </section>
 
+      <section class="scroll-story" aria-label="Presentation animee">
+        <article class="story-step hero-step" id="ouverture" data-stage="Ouverture">
+          <div class="story-copy">
+            <p class="eyebrow">Machines Roger International</p>
+            <h1>Corps humain 3D anime pour formation terrain</h1>
+            <p>Le corps apparait a l'ouverture, puis le scroll revele les systemes anatomiques en couches synchronisees.</p>
+          </div>
+        </article>
+
+        <article class="story-step" data-stage="Structure osseuse">
+          <div class="story-copy">
+            <p class="eyebrow">Etape 01</p>
+            <h2>Repere osseux</h2>
+            <p>La camera isole la charpente: crane, colonne, cage thoracique, bassin et membres.</p>
+          </div>
+        </article>
+
+        <article class="story-step align-right" data-stage="Muscles et tendons">
+          <div class="story-copy">
+            <p class="eyebrow">Etape 02</p>
+            <h2>Force musculaire</h2>
+            <p>Les muscles pulsent doucement pendant que les tendons restent visibles aux articulations principales.</p>
+          </div>
+        </article>
+
+        <article class="story-step" data-stage="Nerfs et circulation">
+          <div class="story-copy">
+            <p class="eyebrow">Etape 03</p>
+            <h2>Signaux et flux</h2>
+            <p>Les nerfs, les arteres et les veines apparaissent comme des reseaux critiques a proteger.</p>
+          </div>
+        </article>
+
+        <article class="story-step final-step" data-stage="Vue complete">
+          <div class="story-copy">
+            <p class="eyebrow">Synthese</p>
+            <h2>Atlas interactif</h2>
+            <p>La scene reste manipulable et peut recevoir des meshes anatomiques valides pour une version medicale finale.</p>
+          </div>
+        </article>
+      </section>
+
       <aside class="control-panel" aria-label="Panneau anatomique">
         <header class="panel-header">
-          <p class="kicker">Template Three.js</p>
+          <p class="kicker">MRI Anatomy</p>
           <h1>Atlas anatomique 3D</h1>
           <div class="source-pill" id="sourceStatus">Mode demo procedurale</div>
         </header>
@@ -64,6 +123,10 @@
           <p id="selectedNote">Pour une production medicale, remplacez les formes demo par des meshes BodyParts3D, glTF ou OBJ valides.</p>
         </section>
       </aside>
+
+      <div class="scroll-progress" aria-hidden="true">
+        <span id="progressFill"></span>
+      </div>
 
       <div class="label-layer" id="labelLayer" aria-hidden="true"></div>
 
