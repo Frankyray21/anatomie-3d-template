@@ -4,15 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-2" />
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "./vendor/three.module.js",
-          "three/addons/": "./vendor/examples/jsm/"
-        }
-      }
-    </script>
+    <link rel="stylesheet" href="./styles.css?v=20260624-3" />
   </head>
   <body>
     <header class="brand-header">
@@ -137,15 +129,17 @@
     </main>
 
     <script>
-      window.addEventListener("error", () => {
+      window.addEventListener("error", (event) => {
+        if (window.__anatomyAppReady || (event.target && event.target !== window)) return;
         const message = document.querySelector("#loadingMessage");
         if (message) message.textContent = "Chargement interrompu. Rechargez la page ou activez WebGL.";
       });
       window.addEventListener("unhandledrejection", () => {
+        if (window.__anatomyAppReady) return;
         const message = document.querySelector("#loadingMessage");
         if (message) message.textContent = "Chargement interrompu. Rechargez la page ou activez WebGL.";
       });
     </script>
-    <script type="module" src="./src/app.js?v=20260624-2"></script>
+    <script type="module" src="./src/app.js?v=20260624-3"></script>
   </body>
 </html>

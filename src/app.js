@@ -1,7 +1,7 @@
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+import * as THREE from "../vendor/three.module.js";
+import { OrbitControls } from "../vendor/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "../vendor/examples/jsm/loaders/GLTFLoader.js";
+import { OBJLoader } from "../vendor/examples/jsm/loaders/OBJLoader.js";
 
 const canvas = document.querySelector("#scene");
 const layerList = document.querySelector("#layerList");
@@ -144,6 +144,9 @@ controls.rotateSpeed = 0.48;
 controls.minDistance = 2.4;
 controls.maxDistance = 8.5;
 controls.target.set(0, 0.08, 0);
+const isTouchFirst = window.matchMedia("(pointer: coarse)").matches;
+controls.enabled = !isTouchFirst;
+renderer.domElement.style.touchAction = isTouchFirst ? "pan-y" : "none";
 
 const anatomyRoot = new THREE.Group();
 scene.add(anatomyRoot);
@@ -204,6 +207,7 @@ createLabels();
 loadValidatedManifest();
 handleScroll();
 updateLayerState();
+window.__anatomyAppReady = true;
 setTimeout(() => loadingState.classList.add("is-hidden"), 420);
 
 renderer.setAnimationLoop(render);
