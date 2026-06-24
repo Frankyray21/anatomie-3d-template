@@ -18,7 +18,7 @@ Puis ouvrez:
 http://localhost:4173/
 ```
 
-Le template importe Three.js depuis un CDN. Il faut donc une connexion Internet au premier chargement, sauf si vous remplacez les imports par des fichiers locaux.
+Le template sert Three.js depuis le dossier local `vendor/`, afin que la page ne depende pas d'un CDN externe au chargement.
 
 ## Deploiement
 

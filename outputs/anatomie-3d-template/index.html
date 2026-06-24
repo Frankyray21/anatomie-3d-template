@@ -8,8 +8,8 @@
     <script type="importmap">
       {
         "imports": {
-          "three": "https://unpkg.com/three@0.165.0/build/three.module.js",
-          "three/addons/": "https://unpkg.com/three@0.165.0/examples/jsm/"
+          "three": "./vendor/three.module.js",
+          "three/addons/": "./vendor/examples/jsm/"
         }
       }
     </script>
@@ -132,10 +132,20 @@
 
       <div class="loading" id="loadingState">
         <div class="loader"></div>
-        <p>Initialisation WebGL</p>
+        <p id="loadingMessage">Initialisation WebGL</p>
       </div>
     </main>
 
+    <script>
+      window.addEventListener("error", () => {
+        const message = document.querySelector("#loadingMessage");
+        if (message) message.textContent = "Chargement interrompu. Rechargez la page ou activez WebGL.";
+      });
+      window.addEventListener("unhandledrejection", () => {
+        const message = document.querySelector("#loadingMessage");
+        if (message) message.textContent = "Chargement interrompu. Rechargez la page ou activez WebGL.";
+      });
+    </script>
     <script type="module" src="./src/app.js"></script>
   </body>
 </html>
