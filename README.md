@@ -48,7 +48,7 @@ Le code charge automatiquement `assets/anatomy-manifest.json` s'il existe. Si `r
 
 ## Fichiers
 
-- `index.html` : structure de l'application et import map Three.js.
+- `index.html` : structure de l'application et chargement du module principal.
 - `styles.css` : interface responsive.
 - `src/app.js` : scene 3D, animation, selection et chargement des modeles.
 - `assets/anatomy-manifest.example.json` : exemple d'integration de meshes valides.

@@ -20,6 +20,9 @@ const speedSlider = document.querySelector("#speedSlider");
 const storySteps = [...document.querySelectorAll(".story-step")];
 const progressFill = document.querySelector("#progressFill");
 const progressLabel = document.querySelector("#progressLabel");
+const isTouchFirst = window.matchMedia("(pointer: coarse)").matches;
+const isCompactScreen = window.matchMedia("(max-width: 820px)").matches;
+const mobileRenderMode = isTouchFirst || isCompactScreen;
 
 const layerConfig = {
   skin: {
@@ -123,17 +126,34 @@ scene.fog = new THREE.Fog("#111214", 5.2, 9.5);
 const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.01, 100);
 camera.position.set(3.2, 1.45, 4.8);
 
-const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true,
-  alpha: false,
-  powerPreference: "high-performance"
-});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+let renderer;
+
+try {
+  renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: !mobileRenderMode,
+    alpha: false,
+    failIfMajorPerformanceCaveat: false,
+    powerPreference: mobileRenderMode ? "default" : "high-performance"
+  });
+} catch (error) {
+  showStartupError("WebGL ne peut pas demarrer sur ce navigateur. Essayez Chrome ou activez l'acceleration materielle.");
+  throw error;
+}
+
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobileRenderMode ? 1.25 : 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = !mobileRenderMode;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.domElement.addEventListener(
+  "webglcontextlost",
+  (event) => {
+    event.preventDefault();
+    showStartupError("Contexte WebGL perdu. Rechargez la page pour relancer la scene 3D.");
+  },
+  false
+);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -144,7 +164,6 @@ controls.rotateSpeed = 0.48;
 controls.minDistance = 2.4;
 controls.maxDistance = 8.5;
 controls.target.set(0, 0.08, 0);
-const isTouchFirst = window.matchMedia("(pointer: coarse)").matches;
 controls.enabled = !isTouchFirst;
 renderer.domElement.style.touchAction = isTouchFirst ? "pan-y" : "none";
 
@@ -211,6 +230,12 @@ window.__anatomyAppReady = true;
 setTimeout(() => loadingState.classList.add("is-hidden"), 420);
 
 renderer.setAnimationLoop(render);
+
+function showStartupError(message) {
+  const node = document.querySelector("#loadingMessage");
+  if (node) node.textContent = message;
+  document.body.classList.add("has-startup-error");
+}
 
 function makeMaterial(color, opacity = 1, transparent = false, roughness = 0.7) {
   return new THREE.MeshStandardMaterial({
