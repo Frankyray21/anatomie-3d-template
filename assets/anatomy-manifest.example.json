@@ -1,0 +1,31 @@
+{
+  "sourceLabel": "BodyParts3D / atlas valide",
+  "replaceDemo": false,
+  "scale": 0.01,
+  "assets": [
+    {
+      "layer": "skeleton",
+      "name": "Femur droit",
+      "path": "./assets/bodyparts3d/Femur_R.obj",
+      "type": "obj",
+      "color": "#efe2c9",
+      "opacity": 1,
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0],
+      "scale": 1,
+      "note": "Mesh anatomique importe depuis une source validee."
+    },
+    {
+      "layer": "muscles",
+      "name": "Quadriceps femoral droit",
+      "path": "./assets/bodyparts3d/Quadriceps_R.glb",
+      "type": "glb",
+      "color": "#c74d47",
+      "opacity": 0.92,
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0],
+      "scale": 1,
+      "note": "Preferer glTF/GLB pour la production web."
+    }
+  ]
+}
