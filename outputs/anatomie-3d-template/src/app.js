@@ -279,6 +279,9 @@ function makeMaterial(color, opacity = 1, transparent = false, roughness = 0.7) 
 }
 
 function buildInterface() {
+  layerList.innerHTML = "";
+  layerList.setAttribute("data-webgl-ready", "true");
+
   Object.entries(layerConfig).forEach(([key, config]) => {
     const row = document.createElement("label");
     row.className = "layer-row";

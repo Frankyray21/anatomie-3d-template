@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-8" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-9" />
   </head>
   <body>
     <header class="brand-header">
@@ -135,36 +135,55 @@
           <span class="fallback-leg fallback-leg-right"></span>
           <span class="fallback-signal"></span>
         </div>
-        <p id="loadingMessage">Initialisation WebGL</p>
+        <p id="loadingMessage">Preparation de l'atlas anatomique</p>
         <button class="startup-retry" type="button" onclick="window.location.reload()">Recharger</button>
       </div>
     </main>
 
     <script>
       (function () {
-        const fallbackCanvas = document.querySelector("#fallbackScene");
-        const progressFill = document.querySelector("#progressFill");
-        const progressLabel = document.querySelector("#progressLabel");
-        if (!fallbackCanvas) return;
-
-        const ctx = fallbackCanvas.getContext("2d");
-        const colors = {
+        var fallbackCanvas = document.getElementById("fallbackScene");
+        var layerList = document.getElementById("layerList");
+        var progressFill = document.getElementById("progressFill");
+        var progressLabel = document.getElementById("progressLabel");
+        var sourceStatus = document.getElementById("sourceStatus");
+        var loadingState = document.getElementById("loadingState");
+        var separationSlider = document.getElementById("separationSlider");
+        var opacitySlider = document.getElementById("opacitySlider");
+        var speedSlider = document.getElementById("speedSlider");
+        var ctx = fallbackCanvas ? fallbackCanvas.getContext("2d") : null;
+        var width = 1;
+        var height = 1;
+        var started = Date.now();
+        var activeLayers = {
+          skin: true,
+          skeleton: true,
+          muscles: true,
+          tendons: true,
+          nerves: true,
+          vessels: true
+        };
+        var colors = {
           bg: "#0d1013",
           bone: "#efe2c9",
           muscle: "#c74d47",
           tendon: "#e8dcc1",
           nerve: "#f2c94c",
           vessel: "#5fa9d6",
-          skin: "rgba(215, 143, 114, 0.18)"
+          skin: "#d78f72"
         };
-        let width = 0;
-        let height = 0;
-        let started = performance.now();
+
+        function addClass(node, name) {
+          if (!node) return;
+          if (node.classList) node.classList.add(name);
+          else if ((" " + node.className + " ").indexOf(" " + name + " ") < 0) node.className += " " + name;
+        }
 
         function resizeFallback() {
-          const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
-          width = window.innerWidth;
-          height = window.innerHeight;
+          if (!ctx) return;
+          var ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+          width = window.innerWidth || document.documentElement.clientWidth || 360;
+          height = window.innerHeight || document.documentElement.clientHeight || 640;
           fallbackCanvas.width = Math.max(1, Math.floor(width * ratio));
           fallbackCanvas.height = Math.max(1, Math.floor(height * ratio));
           fallbackCanvas.style.width = width + "px";
@@ -173,8 +192,9 @@
         }
 
         function scrollProgress() {
-          const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-          const value = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+          var doc = document.documentElement;
+          var maxScroll = Math.max(1, doc.scrollHeight - (window.innerHeight || doc.clientHeight));
+          var value = Math.max(0, Math.min(1, (window.pageYOffset || doc.scrollTop || 0) / maxScroll));
           if (progressFill) progressFill.style.width = Math.round(value * 100) + "%";
           if (progressLabel) {
             progressLabel.textContent =
@@ -187,122 +207,216 @@
           return value;
         }
 
-        function line(points, color, size) {
+        function buildFallbackControls() {
+          if (!layerList || layerList.getAttribute("data-webgl-ready") === "true") return;
+          var items = [
+            ["skin", "Peau translucide", colors.skin],
+            ["skeleton", "Os", colors.bone],
+            ["muscles", "Muscles", colors.muscle],
+            ["tendons", "Tendons", colors.tendon],
+            ["nerves", "Nerfs", colors.nerve],
+            ["vessels", "Vaisseaux", colors.vessel]
+          ];
+          var html = "";
+          for (var i = 0; i < items.length; i += 1) {
+            html += '<label class="layer-row" data-fallback-layer="' + items[i][0] + '">' +
+              '<input class="layer-toggle" type="checkbox" data-layer="' + items[i][0] + '" checked />' +
+              '<span class="layer-name">' + items[i][1] + '</span>' +
+              '<span class="swatch" style="background:' + items[i][2] + '"></span>' +
+              "</label>";
+          }
+          layerList.innerHTML = html;
+          layerList.onchange = function (event) {
+            var target = event.target || event.srcElement;
+            if (!target || target.getAttribute("data-layer") == null) return;
+            activeLayers[target.getAttribute("data-layer")] = !!target.checked;
+          };
+        }
+
+        function line(points, color, size, alpha) {
+          if (alpha != null) ctx.globalAlpha = alpha;
           ctx.strokeStyle = color;
           ctx.lineWidth = size;
           ctx.lineCap = "round";
           ctx.lineJoin = "round";
           ctx.beginPath();
-          points.forEach((point, index) => {
-            if (index === 0) ctx.moveTo(point[0], point[1]);
-            else ctx.lineTo(point[0], point[1]);
-          });
+          for (var i = 0; i < points.length; i += 1) {
+            if (i === 0) ctx.moveTo(points[i][0], points[i][1]);
+            else ctx.lineTo(points[i][0], points[i][1]);
+          }
           ctx.stroke();
+          ctx.globalAlpha = 1;
         }
 
-        function ellipse(x, y, rx, ry, color, stroke, size) {
+        function ellipse(x, y, rx, ry, fill, stroke, size, alpha) {
+          ctx.save();
+          if (alpha != null) ctx.globalAlpha = alpha;
+          ctx.translate(x, y);
+          ctx.scale(rx, ry);
           ctx.beginPath();
-          ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
-          if (color) {
-            ctx.fillStyle = color;
+          ctx.arc(0, 0, 1, 0, Math.PI * 2, false);
+          if (fill) {
+            ctx.fillStyle = fill;
             ctx.fill();
           }
           if (stroke) {
             ctx.strokeStyle = stroke;
-            ctx.lineWidth = size || 2;
+            ctx.lineWidth = (size || 2) / Math.max(rx, ry);
             ctx.stroke();
           }
+          ctx.restore();
         }
 
-        function renderFallback(now) {
-          const progress = scrollProgress();
-          const t = (now - started) / 1000;
-          const intro = Math.min(1, t / 1.5);
-          const scale = Math.min(width / 430, height / 720) * (0.82 + intro * 0.18);
-          const cx = width * (0.5 + Math.sin(progress * Math.PI * 2) * 0.07);
-          const cy = height * 0.5 + 18;
-          const pulse = Math.sin(t * 2.2) * 0.04;
-          const split = progress * 48;
-          const alphaSkin = Math.max(0.08, 0.3 - progress * 0.16);
+        function drawLabel(text, x, y, tx, ty, color) {
+          ctx.save();
+          ctx.strokeStyle = color;
+          ctx.fillStyle = "#f8fafc";
+          ctx.lineWidth = 1.4;
+          ctx.font = "12px Segoe UI, Arial, sans-serif";
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(tx, ty);
+          ctx.stroke();
+          ctx.fillText(text, tx + 7, ty + 4);
+          ctx.restore();
+        }
+
+        function renderFallback() {
+          if (!ctx) return;
+          var progress = scrollProgress();
+          var t = (Date.now() - started) / 1000;
+          var intro = Math.min(1, t / 1.15);
+          var dissection = separationSlider ? Number(separationSlider.value || 0.34) : 0.34;
+          var opacity = opacitySlider ? Number(opacitySlider.value || 0.86) : 0.86;
+          var speed = speedSlider ? Number(speedSlider.value || 0.9) : 0.9;
+          var split = (18 + progress * 58) * dissection;
+          var scale = Math.min(width / 430, height / 720) * (0.78 + intro * 0.22);
+          var cx = width * (0.5 + Math.sin(progress * Math.PI * 2) * 0.07);
+          var cy = height * 0.51;
+          var pulse = Math.sin(t * 2.3 * speed) * 0.045;
+          var scan = -150 + ((t * 80 * speed) % 300);
 
           ctx.clearRect(0, 0, width, height);
           ctx.fillStyle = colors.bg;
           ctx.fillRect(0, 0, width, height);
-
           ctx.save();
           ctx.translate(cx, cy);
           ctx.scale(scale, scale);
-          ctx.rotate(Math.sin(t * 0.28 + progress * 2) * 0.08);
+          ctx.rotate(Math.sin(t * 0.25 + progress * 2) * 0.07);
           ctx.globalAlpha = intro;
 
-          ctx.fillStyle = colors.skin.replace("0.18", alphaSkin.toFixed(2));
-          ellipse(0, -215, 35, 43, ctx.fillStyle, "rgba(215,143,114,0.42)", 2);
-          ellipse(0, -70, 72, 150, ctx.fillStyle, "rgba(215,143,114,0.34)", 2);
-
-          line([[0, -178], [0, -25], [0, 83]], colors.bone, 8);
-          ellipse(0, -220, 26, 32, "rgba(239,226,201,0.2)", colors.bone, 4);
-          ellipse(0, 66, 58, 31, "rgba(239,226,201,0.12)", colors.bone, 4);
-
-          for (let i = 0; i < 8; i += 1) {
-            const y = -148 + i * 16;
-            const w = 28 + i * 7;
-            line([[0, y], [-w - split * 0.25, y + 10]], colors.bone, 4);
-            line([[0, y], [w + split * 0.25, y + 10]], colors.bone, 4);
+          if (activeLayers.skin) {
+            ellipse(0, -215, 38, 47, colors.skin, colors.skin, 2, Math.max(0.08, 0.28 * opacity));
+            ellipse(0, -70, 78, 155, colors.skin, colors.skin, 2, Math.max(0.06, 0.2 * opacity));
+            line([[-70, -118], [-128, -28], [-142, 68]], colors.skin, 18, 0.12 * opacity);
+            line([[70, -118], [128, -28], [142, 68]], colors.skin, 18, 0.12 * opacity);
+            line([[-48, 76], [-70, 230]], colors.skin, 22, 0.12 * opacity);
+            line([[48, 76], [70, 230]], colors.skin, 22, 0.12 * opacity);
           }
 
-          ellipse(-34 - split, -92, 24 * (1 + pulse), 96, "rgba(199,77,71,0.72)", null);
-          ellipse(34 + split, -92, 24 * (1 - pulse), 96, "rgba(199,77,71,0.72)", null);
-          ellipse(-50 - split, 82, 25 * (1 - pulse), 95, "rgba(199,77,71,0.7)", null);
-          ellipse(50 + split, 82, 25 * (1 + pulse), 95, "rgba(199,77,71,0.7)", null);
+          if (activeLayers.muscles) {
+            ellipse(-35 - split, -94, 25 * (1 + pulse), 96, colors.muscle, null, 0, 0.72 * opacity);
+            ellipse(35 + split, -94, 25 * (1 - pulse), 96, colors.muscle, null, 0, 0.72 * opacity);
+            ellipse(-52 - split, 84, 27 * (1 - pulse), 98, colors.muscle, null, 0, 0.7 * opacity);
+            ellipse(52 + split, 84, 27 * (1 + pulse), 98, colors.muscle, null, 0, 0.7 * opacity);
+            line([[-64 - split, -125], [-122 - split, -35], [-138 - split, 58]], colors.muscle, 16, 0.88 * opacity);
+            line([[64 + split, -125], [122 + split, -35], [138 + split, 58]], colors.muscle, 16, 0.88 * opacity);
+            line([[-46 - split, 75], [-62 - split, 198]], colors.muscle, 18, 0.9 * opacity);
+            line([[46 + split, 75], [62 + split, 198]], colors.muscle, 18, 0.9 * opacity);
+          }
 
-          line([[-63 - split, -125], [-122 - split, -35], [-138 - split, 58]], colors.muscle, 16);
-          line([[63 + split, -125], [122 + split, -35], [138 + split, 58]], colors.muscle, 16);
-          line([[-45 - split, 75], [-62 - split, 198]], colors.muscle, 18);
-          line([[45 + split, 75], [62 + split, 198]], colors.muscle, 18);
+          if (activeLayers.skeleton) {
+            line([[0, -178], [0, -25], [0, 84]], colors.bone, 8, opacity);
+            ellipse(0, -220, 28, 34, "rgba(239,226,201,0.18)", colors.bone, 4, opacity);
+            ellipse(0, 66, 60, 32, "rgba(239,226,201,0.1)", colors.bone, 4, opacity);
+            for (var i = 0; i < 9; i += 1) {
+              var y = -149 + i * 16;
+              var w = 28 + i * 7;
+              line([[0, y], [-w - split * 0.35, y + 10]], colors.bone, 4, opacity);
+              line([[0, y], [w + split * 0.35, y + 10]], colors.bone, 4, opacity);
+            }
+            line([[-30, 76], [-58 - split * 0.28, 228]], colors.bone, 8, opacity);
+            line([[30, 76], [58 + split * 0.28, 228]], colors.bone, 8, opacity);
+          }
 
-          line([[-136 - split, 54], [-142 - split, 85]], colors.tendon, 6);
-          line([[136 + split, 54], [142 + split, 85]], colors.tendon, 6);
-          line([[-62 - split, 190], [-72 - split, 235]], colors.tendon, 7);
-          line([[62 + split, 190], [72 + split, 235]], colors.tendon, 7);
+          if (activeLayers.tendons) {
+            line([[-136 - split, 54], [-142 - split, 86]], colors.tendon, 6, opacity);
+            line([[136 + split, 54], [142 + split, 86]], colors.tendon, 6, opacity);
+            line([[-62 - split, 190], [-72 - split, 235]], colors.tendon, 7, opacity);
+            line([[62 + split, 190], [72 + split, 235]], colors.tendon, 7, opacity);
+          }
 
-          line([[0, -198], [0, -28], [-52 - split * 0.35, 98], [-66 - split * 0.35, 202]], colors.nerve, 4);
-          line([[0, -60], [58 + split * 0.35, 42], [74 + split * 0.35, 148]], colors.nerve, 4);
-          line([[8, -120], [18, -32], [0, 90]], colors.vessel, 5);
+          if (activeLayers.nerves) {
+            line([[0, -198], [0, -28], [-52 - split * 0.35, 98], [-66 - split * 0.35, 202]], colors.nerve, 4, opacity);
+            line([[0, -60], [58 + split * 0.35, 42], [74 + split * 0.35, 148]], colors.nerve, 4, opacity);
+          }
 
-          ctx.globalAlpha = 0.28 + Math.sin(t * 3) * 0.12;
+          if (activeLayers.vessels) {
+            line([[10, -126], [18, -32], [0, 90]], "#d75b4d", 5, opacity);
+            line([[-8, -96], [-22, -4], [-10, 86]], colors.vessel, 5, opacity);
+          }
+
+          ctx.globalAlpha = 0.24 + Math.sin(t * 3 * speed) * 0.1;
           ctx.fillStyle = "#6fd0bd";
-          ctx.fillRect(-120 + Math.sin(t) * 90, -250, 5, 500);
+          ctx.fillRect(scan, -255, 5, 510);
+          ctx.globalAlpha = 1;
+
+          if (width > 700 || progress > 0.1) {
+            drawLabel("Crane", 30, -220, 104, -236, colors.bone);
+            drawLabel("Cage thoracique", 74, -108, 124, -128, colors.bone);
+            drawLabel("Plexus brachial", -86, -74, -182, -98, colors.nerve);
+            drawLabel("Quadriceps", 72, 96, 128, 118, colors.muscle);
+            drawLabel("Tendon d'Achille", -70, 215, -185, 220, colors.tendon);
+          }
 
           ctx.restore();
           window.requestAnimationFrame(renderFallback);
         }
 
+        window.showStartupFallback = function (messageText) {
+          if (window.__anatomyAppReady) return;
+          var message = document.getElementById("loadingMessage");
+          if (message) message.textContent = messageText || "Mode compatible actif - animation anatomique sans WebGL.";
+          addClass(document.body, "has-startup-error");
+          addClass(document.body, "compat-atlas");
+          if (sourceStatus) sourceStatus.textContent = "Mode compatible mobile";
+          if (loadingState) window.setTimeout(function () { addClass(loadingState, "is-hidden"); }, 420);
+        };
+
+        buildFallbackControls();
         window.__fallbackSceneRunning = true;
-        window.addEventListener("resize", resizeFallback, { passive: true });
+        addClass(document.body, "compat-atlas");
+        if (sourceStatus) sourceStatus.textContent = "Mode compatible mobile";
+        if (loadingState) window.setTimeout(function () { addClass(loadingState, "is-hidden"); }, 650);
+        window.addEventListener("resize", resizeFallback, false);
         resizeFallback();
-        window.requestAnimationFrame(renderFallback);
+        renderFallback();
       })();
 
       function showStartupFallback(messageText) {
+        if (window.showStartupFallback) {
+          window.showStartupFallback(messageText);
+          return;
+        }
         if (window.__anatomyAppReady) return;
-        const message = document.querySelector("#loadingMessage");
+        var message = document.getElementById("loadingMessage");
         if (message) message.textContent = messageText || "Chargement interrompu. Rechargez la page ou activez WebGL.";
         document.body.classList.add("has-startup-error");
-        const loader = document.querySelector("#loadingState");
-        if (loader) window.setTimeout(() => loader.classList.add("is-hidden"), 900);
+        var loader = document.getElementById("loadingState");
+        if (loader) window.setTimeout(function () { loader.classList.add("is-hidden"); }, 900);
       }
 
-      window.addEventListener("error", (event) => {
+      window.addEventListener("error", function () {
         if (window.__anatomyAppReady) return;
         showStartupFallback("Le module 3D n'a pas demarre. Rechargez la page ou ouvrez avec Chrome.");
       });
-      window.addEventListener("unhandledrejection", () => {
+      window.addEventListener("unhandledrejection", function () {
         showStartupFallback("Le moteur 3D a ete interrompu. Rechargez la page ou activez WebGL.");
       });
-      window.setTimeout(() => {
-        showStartupFallback("Chargement trop long. Rechargez la page ou ouvrez avec Chrome.");
-      }, 3200);
+      window.setTimeout(function () {
+        showStartupFallback("Mode compatible actif - animation anatomique sans WebGL.");
+      }, 1800);
     </script>
-    <script type="module" src="./src/app.js?v=20260624-8"></script>
+    <script type="module" src="./src/app.js?v=20260624-9"></script>
   </body>
 </html>
