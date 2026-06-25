@@ -457,14 +457,149 @@ input[type="range"] {
   animation: spin 820ms linear infinite;
 }
 
+.fallback-anatomy {
+  position: relative;
+  display: none;
+  width: 118px;
+  height: 250px;
+  margin: 4px 0 0;
+  opacity: 0;
+}
+
+.fallback-anatomy span {
+  position: absolute;
+  display: block;
+}
+
+.fallback-head {
+  top: 2px;
+  left: 43px;
+  width: 32px;
+  height: 38px;
+  border: 2px solid var(--bone);
+  border-radius: 48% 48% 42% 42%;
+  background: rgba(239, 226, 201, 0.12);
+}
+
+.fallback-spine {
+  top: 45px;
+  left: 57px;
+  width: 4px;
+  height: 112px;
+  border-radius: 999px;
+  background: var(--bone);
+  box-shadow: 0 18px 0 var(--bone), 0 36px 0 var(--bone), 0 54px 0 var(--bone);
+}
+
+.fallback-ribs {
+  top: 52px;
+  left: 29px;
+  width: 60px;
+  height: 72px;
+  border: 2px solid rgba(239, 226, 201, 0.82);
+  border-top-width: 3px;
+  border-bottom-color: transparent;
+  border-radius: 48% 48% 18% 18%;
+}
+
+.fallback-ribs::before,
+.fallback-ribs::after {
+  position: absolute;
+  top: 28px;
+  width: 28px;
+  height: 62px;
+  border-radius: 999px;
+  background: rgba(199, 77, 71, 0.76);
+  content: "";
+}
+
+.fallback-ribs::before {
+  left: -18px;
+  transform: rotate(15deg);
+}
+
+.fallback-ribs::after {
+  right: -18px;
+  transform: rotate(-15deg);
+}
+
+.fallback-arm,
+.fallback-leg {
+  width: 8px;
+  border-radius: 999px;
+  background: var(--muscle);
+  transform-origin: top center;
+}
+
+.fallback-arm {
+  top: 60px;
+  height: 96px;
+}
+
+.fallback-arm-left {
+  left: 18px;
+  transform: rotate(20deg);
+}
+
+.fallback-arm-right {
+  right: 18px;
+  transform: rotate(-20deg);
+}
+
+.fallback-leg {
+  top: 153px;
+  height: 92px;
+}
+
+.fallback-leg-left {
+  left: 47px;
+  transform: rotate(8deg);
+}
+
+.fallback-leg-right {
+  right: 47px;
+  transform: rotate(-8deg);
+}
+
+.fallback-signal {
+  top: 57px;
+  left: 54px;
+  width: 10px;
+  height: 180px;
+  border-radius: 999px;
+  background: linear-gradient(var(--nerve), var(--vessel));
+  opacity: 0.86;
+  animation: signalPulse 1.6s ease-in-out infinite;
+}
+
 .loading p {
   color: var(--muted);
   font-size: 0.86rem;
 }
 
+.startup-retry {
+  display: none;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(244, 176, 0, 0.58);
+  border-radius: 7px;
+  background: rgba(244, 176, 0, 0.16);
+  color: #fff4bd;
+  font-weight: 760;
+}
+
 .has-startup-error .loader {
   border-top-color: var(--accent-red);
   animation-duration: 1.8s;
+}
+
+.has-startup-error .fallback-anatomy,
+.has-startup-error .startup-retry {
+  display: block;
+}
+
+.has-startup-error .fallback-anatomy {
+  opacity: 1;
 }
 
 .has-startup-error .loading p {
@@ -477,6 +612,19 @@ input[type="range"] {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes signalPulse {
+  0%,
+  100% {
+    opacity: 0.46;
+    transform: scaleY(0.86);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1);
   }
 }
 
