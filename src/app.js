@@ -1,5 +1,7 @@
 import * as THREE from "../vendor/three.module.js";
 import { OrbitControls } from "../vendor/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "../vendor/examples/jsm/loaders/GLTFLoader.js";
+import { OBJLoader } from "../vendor/examples/jsm/loaders/OBJLoader.js";
 
 const canvas = document.querySelector("#scene");
 const layerList = document.querySelector("#layerList");
@@ -196,15 +198,14 @@ const demoRoot = new THREE.Group();
 demoRoot.name = "Demo procedural anatomy";
 anatomyRoot.add(demoRoot);
 
-const layers = Object.fromEntries(
-  Object.keys(layerConfig).map((key) => {
-    const group = new THREE.Group();
-    group.name = key;
-    group.userData.layer = key;
-    demoRoot.add(group);
-    return [key, group];
-  })
-);
+const layers = {};
+Object.keys(layerConfig).forEach((key) => {
+  const group = new THREE.Group();
+  group.name = key;
+  group.userData.layer = key;
+  demoRoot.add(group);
+  layers[key] = group;
+});
 
 const importedRoot = new THREE.Group();
 importedRoot.name = "Validated imported anatomy";
@@ -214,7 +215,6 @@ const raycaster = new THREE.Raycaster();
 const interactive = [];
 const labels = [];
 const animatedParts = [];
-const lazyLoaders = {};
 let lastFrameTime = 0;
 let lastLayerState = {
   separation: Number.NaN,
@@ -868,7 +868,7 @@ function registerMesh(mesh, layer, name, data = {}) {
     anatomy: {
       name,
       layer,
-      system: data.system || layerConfig[layer]?.label || layer,
+      system: data.system || (layerConfig[layer] ? layerConfig[layer].label : layer),
       note: data.note || "Structure anatomique."
     },
     baseScale: mesh.scale.clone()
@@ -898,7 +898,7 @@ async function loadValidatedManifest() {
 
 async function loadAsset(asset, globalScale) {
   const type = (asset.type || asset.path.split(".").pop() || "").toLowerCase();
-  const loader = await createAssetLoader(type);
+  const loader = type === "obj" ? new OBJLoader() : new GLTFLoader();
 
   const object = await new Promise((resolve, reject) => {
     loader.load(
@@ -911,7 +911,7 @@ async function loadAsset(asset, globalScale) {
 
   const layer = layerConfig[asset.layer] ? asset.layer : "skeleton";
   const color = asset.color || layerConfig[layer].color;
-  const opacity = asset.opacity ?? layerConfig[layer].opacity;
+  const opacity = asset.opacity != null ? asset.opacity : layerConfig[layer].opacity;
   const mat = makeMaterial(color, opacity, opacity < 1, 0.76);
   object.traverse((child) => {
     if (child.isMesh) {
@@ -933,18 +933,6 @@ async function loadAsset(asset, globalScale) {
   object.scale.setScalar(scale);
   object.name = asset.name || "Imported anatomy asset";
   importedRoot.add(object);
-}
-
-async function createAssetLoader(type) {
-  if (type === "obj") {
-    lazyLoaders.obj ??= import("../vendor/examples/jsm/loaders/OBJLoader.js").then(({ OBJLoader }) => OBJLoader);
-    const Loader = await lazyLoaders.obj;
-    return new Loader();
-  }
-
-  lazyLoaders.gltf ??= import("../vendor/examples/jsm/loaders/GLTFLoader.js").then(({ GLTFLoader }) => GLTFLoader);
-  const Loader = await lazyLoaders.gltf;
-  return new Loader();
 }
 
 function updateLayerState(force = false) {
@@ -970,7 +958,8 @@ function updateLayerState(force = false) {
     if (!object.isMesh || !object.material || object === scanPlane) return;
     const anatomy = object.userData.anatomy;
     if (!anatomy) return;
-    const base = layerConfig[anatomy.layer]?.opacity ?? 1;
+    const config = layerConfig[anatomy.layer];
+    const base = config ? config.opacity : 1;
     const target = Math.min(1, base * state.globalOpacity);
     object.material.opacity = target;
     object.material.transparent = target < 0.98;
@@ -983,7 +972,11 @@ function pickStructure(event) {
   raycaster.setFromCamera(state.pointer, camera);
   const hits = raycaster.intersectObjects(interactive, false);
   if (!hits.length) return;
-  const picked = (hits.find((hit) => hit.object.userData.anatomy?.layer !== "skin") || hits[0]).object;
+  const preferred = hits.find((hit) => {
+    const anatomy = hit.object.userData.anatomy;
+    return anatomy && anatomy.layer !== "skin";
+  });
+  const picked = (preferred || hits[0]).object;
   state.selected = picked;
   const info = picked.userData.anatomy;
   selectedName.textContent = info.name;
