@@ -155,6 +155,10 @@ body.webgl-ready #fallbackScene {
   opacity: 0;
 }
 
+body.compat-atlas:not(.webgl-ready) #scene {
+  opacity: 0;
+}
+
 .vignette {
   position: absolute;
   inset: 0;
@@ -336,6 +340,17 @@ p {
   color: #fff1b8;
   background: rgba(244, 176, 0, 0.1);
   font-size: 0.75rem;
+}
+
+body.compat-atlas .source-pill {
+  border-color: rgba(111, 208, 189, 0.46);
+  color: #d7fff7;
+  background: rgba(111, 208, 189, 0.1);
+}
+
+body.compat-atlas .status-dot {
+  background: #6fd0bd;
+  box-shadow: 0 0 0 6px rgba(111, 208, 189, 0.13);
 }
 
 .layer-list {
@@ -668,6 +683,17 @@ input[type="range"] {
 }
 
 @media (max-width: 820px) {
+  body.compat-atlas .app-shell {
+    min-height: 500svh;
+    background: #0d1013;
+  }
+
+  body.compat-atlas .vignette {
+    background:
+      linear-gradient(0deg, rgba(8, 10, 12, 0.8), transparent 34%, rgba(8, 10, 12, 0.2)),
+      linear-gradient(90deg, rgba(8, 10, 12, 0.18), transparent 50%, rgba(8, 10, 12, 0.18));
+  }
+
   body.is-mobile-render .app-shell {
     min-height: 510svh;
     background: linear-gradient(135deg, #0d1013 0%, #171b20 52%, #090b0d 100%);
@@ -682,6 +708,10 @@ input[type="range"] {
   .brand-header {
     min-height: 66px;
     padding: 10px 12px;
+  }
+
+  body.compat-atlas .brand-header {
+    background: rgba(8, 10, 12, 0.88);
   }
 
   body.is-mobile-render .brand-header,
@@ -712,9 +742,25 @@ input[type="range"] {
     align-items: flex-start;
   }
 
+  body.compat-atlas .story-step {
+    padding: 94px 16px 54svh;
+  }
+
   .story-copy {
     width: min(440px, calc(100vw - 36px));
     padding-left: 14px;
+  }
+
+  body.compat-atlas .story-copy {
+    width: min(330px, calc(100vw - 32px));
+    padding-left: 12px;
+    border-left-width: 3px;
+    opacity: 0.72;
+    transform: none;
+  }
+
+  body.compat-atlas .story-step.is-active .story-copy {
+    opacity: 0.96;
   }
 
   .story-copy h1,
@@ -729,10 +775,42 @@ input[type="range"] {
     font-size: 0.98rem;
   }
 
+  body.compat-atlas .story-copy h1,
+  body.compat-atlas .story-copy h2 {
+    max-width: 13ch;
+    font-size: clamp(1.65rem, 8.5vw, 2.7rem);
+    line-height: 1;
+  }
+
+  body.compat-atlas .story-copy p:last-child {
+    max-width: 280px;
+    margin-top: 8px;
+    font-size: 0.84rem;
+    line-height: 1.35;
+  }
+
   .control-panel {
     max-height: 34svh;
     padding: 12px;
     background: rgba(13, 16, 19, 0.9);
+  }
+
+  body.compat-atlas .control-panel {
+    max-height: 30svh;
+    border-color: rgba(111, 208, 189, 0.22);
+    background: rgba(9, 12, 15, 0.92);
+  }
+
+  body.compat-atlas .panel-header {
+    padding-bottom: 10px;
+  }
+
+  body.compat-atlas .panel-header h1 {
+    font-size: 1rem;
+  }
+
+  body.compat-atlas .selected-card {
+    display: none;
   }
 
   .panel-section {
