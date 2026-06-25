@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-5" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-6" />
   </head>
   <body>
     <header class="brand-header">
@@ -124,7 +124,18 @@
 
       <div class="loading" id="loadingState">
         <div class="loader"></div>
+        <div class="fallback-anatomy" aria-hidden="true">
+          <span class="fallback-head"></span>
+          <span class="fallback-spine"></span>
+          <span class="fallback-ribs"></span>
+          <span class="fallback-arm fallback-arm-left"></span>
+          <span class="fallback-arm fallback-arm-right"></span>
+          <span class="fallback-leg fallback-leg-left"></span>
+          <span class="fallback-leg fallback-leg-right"></span>
+          <span class="fallback-signal"></span>
+        </div>
         <p id="loadingMessage">Initialisation WebGL</p>
+        <button class="startup-retry" type="button" onclick="window.location.reload()">Recharger</button>
       </div>
     </main>
 
@@ -133,13 +144,15 @@
         if (window.__anatomyAppReady || (event.target && event.target !== window)) return;
         const message = document.querySelector("#loadingMessage");
         if (message) message.textContent = "Chargement interrompu. Rechargez la page ou activez WebGL.";
+        document.body.classList.add("has-startup-error");
       });
       window.addEventListener("unhandledrejection", () => {
         if (window.__anatomyAppReady) return;
         const message = document.querySelector("#loadingMessage");
         if (message) message.textContent = "Chargement interrompu. Rechargez la page ou activez WebGL.";
+        document.body.classList.add("has-startup-error");
       });
     </script>
-    <script type="module" src="./src/app.js?v=20260624-5"></script>
+    <script type="module" src="./src/app.js?v=20260624-6"></script>
   </body>
 </html>
