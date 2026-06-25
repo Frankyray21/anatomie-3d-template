@@ -1,7 +1,5 @@
 import * as THREE from "../vendor/three.module.js";
 import { OrbitControls } from "../vendor/examples/jsm/controls/OrbitControls.js";
-import { GLTFLoader } from "../vendor/examples/jsm/loaders/GLTFLoader.js";
-import { OBJLoader } from "../vendor/examples/jsm/loaders/OBJLoader.js";
 
 const canvas = document.querySelector("#scene");
 const layerList = document.querySelector("#layerList");
@@ -23,6 +21,30 @@ const progressLabel = document.querySelector("#progressLabel");
 const isTouchFirst = window.matchMedia("(pointer: coarse)").matches;
 const isCompactScreen = window.matchMedia("(max-width: 820px)").matches;
 const mobileRenderMode = isTouchFirst || isCompactScreen;
+const enableHoverPicking = !isTouchFirst && !mobileRenderMode;
+const enableSceneLabels = !mobileRenderMode;
+const detail = mobileRenderMode
+  ? {
+      capsuleCap: 7,
+      capsuleRadial: 12,
+      sphereWidth: 24,
+      sphereHeight: 16,
+      tubeSegments: 28,
+      tubeRadial: 6,
+      floorSegments: 56,
+      gridDivisions: 18
+    }
+  : {
+      capsuleCap: 18,
+      capsuleRadial: 28,
+      sphereWidth: 40,
+      sphereHeight: 28,
+      tubeSegments: 46,
+      tubeRadial: 10,
+      floorSegments: 96,
+      gridDivisions: 26
+    };
+document.body.classList.toggle("is-mobile-render", mobileRenderMode);
 
 const layerConfig = {
   skin: {
@@ -192,6 +214,12 @@ const raycaster = new THREE.Raycaster();
 const interactive = [];
 const labels = [];
 const animatedParts = [];
+const lazyLoaders = {};
+let lastFrameTime = 0;
+let lastLayerState = {
+  separation: Number.NaN,
+  opacity: Number.NaN
+};
 
 const materials = {
   skin: makeMaterial(layerConfig.skin.color, 0.23, true, 0.52),
@@ -270,12 +298,12 @@ function buildInterface() {
 
   separationSlider.addEventListener("input", () => {
     state.separation = Number(separationSlider.value);
-    updateLayerState();
+    updateLayerState(true);
   });
 
   opacitySlider.addEventListener("input", () => {
     state.globalOpacity = Number(opacitySlider.value);
-    updateLayerState();
+    updateLayerState(true);
   });
 
   speedSlider.addEventListener("input", () => {
@@ -298,14 +326,12 @@ function buildInterface() {
     controls.update();
     state.separation = 0.34;
     separationSlider.value = "0.34";
-    updateLayerState();
+    updateLayerState(true);
   });
 
-  canvas.addEventListener("pointermove", (event) => {
-    const rect = canvas.getBoundingClientRect();
-    state.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    state.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-  });
+  if (enableHoverPicking) {
+    canvas.addEventListener("pointermove", updatePointer);
+  }
 
   canvas.addEventListener("pointerleave", () => {
     state.pointer.set(-10, -10);
@@ -314,6 +340,12 @@ function buildInterface() {
   canvas.addEventListener("click", pickStructure);
   window.addEventListener("scroll", handleScroll, { passive: true });
   window.addEventListener("resize", resize);
+}
+
+function updatePointer(event) {
+  const rect = canvas.getBoundingClientRect();
+  state.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  state.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 }
 
 function handleScroll() {
@@ -383,10 +415,12 @@ function buildLights() {
 
   const key = new THREE.DirectionalLight("#fff2de", 3.4);
   key.position.set(2.7, 4.2, 3.4);
-  key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
-  key.shadow.camera.near = 0.2;
-  key.shadow.camera.far = 10;
+  key.castShadow = !mobileRenderMode;
+  if (!mobileRenderMode) {
+    key.shadow.mapSize.set(2048, 2048);
+    key.shadow.camera.near = 0.2;
+    key.shadow.camera.far = 10;
+  }
   scene.add(key);
 
   const rim = new THREE.DirectionalLight("#78d5c9", 1.6);
@@ -396,7 +430,7 @@ function buildLights() {
 
 function buildEnvironment() {
   const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(2.6, 96),
+    new THREE.CircleGeometry(2.6, detail.floorSegments),
     new THREE.MeshStandardMaterial({
       color: "#171819",
       roughness: 0.92,
@@ -407,10 +441,10 @@ function buildEnvironment() {
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -1.92;
-  floor.receiveShadow = true;
+  floor.receiveShadow = !mobileRenderMode;
   scene.add(floor);
 
-  const grid = new THREE.GridHelper(5.2, 26, "#6fd0bd", "#2d3230");
+  const grid = new THREE.GridHelper(5.2, detail.gridDivisions, "#6fd0bd", "#2d3230");
   grid.position.y = -1.91;
   grid.material.transparent = true;
   grid.material.opacity = 0.2;
@@ -756,6 +790,8 @@ function buildScanPlane() {
 }
 
 function createLabels() {
+  if (!enableSceneLabels) return;
+
   [
     ["Crane", [0, 1.9, 0]],
     ["Cage thoracique", [0.44, 0.72, 0.1]],
@@ -776,23 +812,23 @@ function createLabels() {
 }
 
 function addCapsule(layer, position, scale, material, name, data) {
-  const geometry = new THREE.CapsuleGeometry(0.5, 1, 18, 28);
+  const geometry = new THREE.CapsuleGeometry(0.5, 1, detail.capsuleCap, detail.capsuleRadial);
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.fromArray(position);
   mesh.scale.fromArray(scale);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
+  mesh.castShadow = !mobileRenderMode;
+  mesh.receiveShadow = !mobileRenderMode;
   registerMesh(mesh, layer, name, data);
   return mesh;
 }
 
 function addEllipsoid(layer, position, scale, material, name, data) {
-  const geometry = new THREE.SphereGeometry(1, 40, 28);
+  const geometry = new THREE.SphereGeometry(1, detail.sphereWidth, detail.sphereHeight);
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.fromArray(position);
   mesh.scale.fromArray(scale);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
+  mesh.castShadow = !mobileRenderMode;
+  mesh.receiveShadow = !mobileRenderMode;
   registerMesh(mesh, layer, name, data);
   return mesh;
 }
@@ -802,21 +838,26 @@ function addCapsuleBetween(layer, startArray, endArray, radius, material, name, 
   const end = new THREE.Vector3().fromArray(endArray);
   const direction = end.clone().sub(start);
   const length = direction.length();
-  const geometry = new THREE.CapsuleGeometry(radius, Math.max(0.001, length - radius * 2), 12, 18);
+  const geometry = new THREE.CapsuleGeometry(
+    radius,
+    Math.max(0.001, length - radius * 2),
+    Math.max(5, detail.capsuleCap - 3),
+    Math.max(8, detail.capsuleRadial - 6)
+  );
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.copy(start).add(end).multiplyScalar(0.5);
   mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
+  mesh.castShadow = !mobileRenderMode;
+  mesh.receiveShadow = !mobileRenderMode;
   registerMesh(mesh, layer, name, data);
   return mesh;
 }
 
 function addTube(layer, curve, radius, material, name, data) {
-  const geometry = new THREE.TubeGeometry(curve, 46, radius, 10, false);
+  const geometry = new THREE.TubeGeometry(curve, detail.tubeSegments, radius, detail.tubeRadial, false);
   const mesh = new THREE.Mesh(geometry, material);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
+  mesh.castShadow = !mobileRenderMode;
+  mesh.receiveShadow = !mobileRenderMode;
   registerMesh(mesh, layer, name, data);
   return mesh;
 }
@@ -857,7 +898,7 @@ async function loadValidatedManifest() {
 
 async function loadAsset(asset, globalScale) {
   const type = (asset.type || asset.path.split(".").pop() || "").toLowerCase();
-  const loader = type === "obj" ? new OBJLoader() : new GLTFLoader();
+  const loader = await createAssetLoader(type);
 
   const object = await new Promise((resolve, reject) => {
     loader.load(
@@ -875,8 +916,8 @@ async function loadAsset(asset, globalScale) {
   object.traverse((child) => {
     if (child.isMesh) {
       child.material = mat;
-      child.castShadow = true;
-      child.receiveShadow = true;
+      child.castShadow = !mobileRenderMode;
+      child.receiveShadow = !mobileRenderMode;
       child.userData.anatomy = {
         name: asset.name || child.name || "Structure importee",
         layer,
@@ -894,7 +935,32 @@ async function loadAsset(asset, globalScale) {
   importedRoot.add(object);
 }
 
-function updateLayerState() {
+async function createAssetLoader(type) {
+  if (type === "obj") {
+    lazyLoaders.obj ??= import("../vendor/examples/jsm/loaders/OBJLoader.js").then(({ OBJLoader }) => OBJLoader);
+    const Loader = await lazyLoaders.obj;
+    return new Loader();
+  }
+
+  lazyLoaders.gltf ??= import("../vendor/examples/jsm/loaders/GLTFLoader.js").then(({ GLTFLoader }) => GLTFLoader);
+  const Loader = await lazyLoaders.gltf;
+  return new Loader();
+}
+
+function updateLayerState(force = false) {
+  if (
+    !force &&
+    Math.abs(state.separation - lastLayerState.separation) < 0.002 &&
+    Math.abs(state.globalOpacity - lastLayerState.opacity) < 0.002
+  ) {
+    return;
+  }
+
+  lastLayerState = {
+    separation: state.separation,
+    opacity: state.globalOpacity
+  };
+
   Object.entries(layerConfig).forEach(([key, config]) => {
     const group = layers[key];
     group.position.copy(config.separation).multiplyScalar(state.separation);
@@ -912,7 +978,8 @@ function updateLayerState() {
   });
 }
 
-function pickStructure() {
+function pickStructure(event) {
+  if (event) updatePointer(event);
   raycaster.setFromCamera(state.pointer, camera);
   const hits = raycaster.intersectObjects(interactive, false);
   if (!hits.length) return;
@@ -926,18 +993,26 @@ function pickStructure() {
 
 const clock = new THREE.Clock();
 
-function render() {
+function render(timestamp = 0) {
+  if (mobileRenderMode && timestamp > 0 && timestamp - lastFrameTime < 32) return;
+  if (timestamp > 0) lastFrameTime = timestamp;
+
   const elapsed = clock.getElapsedTime();
   const delta = clock.getDelta();
   const speed = state.speed;
   const intro = easeOut(elapsed / 2.15);
   const pose = scrollPose(state.scrollProgress);
+  let targetSeparation = pose.separation;
 
-  state.separation = pose.separation;
+  if (state.tour) {
+    targetSeparation = THREE.MathUtils.clamp(0.44 + Math.sin(elapsed * 0.75 * speed) * 0.3, 0.08, 0.86);
+  }
+
+  state.separation = targetSeparation;
   state.globalOpacity = pose.opacity;
   state.scrollRotation = pose.rotation;
-  separationSlider.value = state.separation.toFixed(2);
-  opacitySlider.value = state.globalOpacity.toFixed(2);
+  setSliderValue(separationSlider, state.separation);
+  setSliderValue(opacitySlider, state.globalOpacity);
   updateLayerState();
 
   if (state.autoRotate) {
@@ -950,13 +1025,6 @@ function render() {
 
   camera.position.lerp(pose.camera, 0.08);
   controls.target.lerp(pose.target, 0.08);
-
-  if (state.tour) {
-    const value = 0.44 + Math.sin(elapsed * 0.75 * speed) * 0.3;
-    state.separation = THREE.MathUtils.clamp(value, 0.08, 0.86);
-    separationSlider.value = state.separation.toFixed(2);
-    updateLayerState();
-  }
 
   animatedParts.forEach((part, index) => {
     const pulse = 1 + Math.sin(elapsed * 2.1 * speed + index * 0.37) * 0.025;
@@ -975,13 +1043,22 @@ function render() {
   renderer.render(scene, camera);
 }
 
+function setSliderValue(input, value) {
+  const next = value.toFixed(2);
+  if (input.value !== next) input.value = next;
+}
+
 function updateHover() {
+  if (!enableHoverPicking) return;
+
   raycaster.setFromCamera(state.pointer, camera);
   const hits = raycaster.intersectObjects(interactive, false);
   document.body.style.cursor = hits.length ? "pointer" : "default";
 }
 
 function updateLabels() {
+  if (!enableSceneLabels) return;
+
   const width = window.innerWidth;
   const height = window.innerHeight;
   labels.forEach(({ marker, node }) => {
