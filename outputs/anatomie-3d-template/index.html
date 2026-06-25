@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-6" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-7" />
   </head>
   <body>
     <header class="brand-header">
@@ -140,19 +140,24 @@
     </main>
 
     <script>
-      window.addEventListener("error", (event) => {
-        if (window.__anatomyAppReady || (event.target && event.target !== window)) return;
-        const message = document.querySelector("#loadingMessage");
-        if (message) message.textContent = "Chargement interrompu. Rechargez la page ou activez WebGL.";
-        document.body.classList.add("has-startup-error");
-      });
-      window.addEventListener("unhandledrejection", () => {
+      function showStartupFallback(messageText) {
         if (window.__anatomyAppReady) return;
         const message = document.querySelector("#loadingMessage");
-        if (message) message.textContent = "Chargement interrompu. Rechargez la page ou activez WebGL.";
+        if (message) message.textContent = messageText || "Chargement interrompu. Rechargez la page ou activez WebGL.";
         document.body.classList.add("has-startup-error");
+      }
+
+      window.addEventListener("error", (event) => {
+        if (window.__anatomyAppReady) return;
+        showStartupFallback("Le module 3D n'a pas demarre. Rechargez la page ou ouvrez avec Chrome.");
       });
+      window.addEventListener("unhandledrejection", () => {
+        showStartupFallback("Le moteur 3D a ete interrompu. Rechargez la page ou activez WebGL.");
+      });
+      window.setTimeout(() => {
+        showStartupFallback("Chargement trop long. Rechargez la page ou ouvrez avec Chrome.");
+      }, 9000);
     </script>
-    <script type="module" src="./src/app.js?v=20260624-6"></script>
+    <script type="module" src="./src/app.js?v=20260624-7"></script>
   </body>
 </html>
