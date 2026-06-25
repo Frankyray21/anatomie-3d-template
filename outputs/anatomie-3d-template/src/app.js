@@ -255,6 +255,7 @@ loadValidatedManifest();
 handleScroll();
 updateLayerState();
 window.__anatomyAppReady = true;
+document.body.classList.add("webgl-ready");
 setTimeout(() => loadingState.classList.add("is-hidden"), 420);
 
 renderer.setAnimationLoop(render);

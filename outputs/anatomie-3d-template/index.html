@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-7" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-8" />
   </head>
   <body>
     <header class="brand-header">
@@ -23,6 +23,7 @@
 
     <main class="app-shell">
       <div class="scene-stage">
+        <canvas id="fallbackScene" aria-hidden="true"></canvas>
         <canvas id="scene" aria-label="Vue 3D animee du corps humain"></canvas>
         <div class="vignette" aria-hidden="true"></div>
       </div>
@@ -140,11 +141,155 @@
     </main>
 
     <script>
+      (function () {
+        const fallbackCanvas = document.querySelector("#fallbackScene");
+        const progressFill = document.querySelector("#progressFill");
+        const progressLabel = document.querySelector("#progressLabel");
+        if (!fallbackCanvas) return;
+
+        const ctx = fallbackCanvas.getContext("2d");
+        const colors = {
+          bg: "#0d1013",
+          bone: "#efe2c9",
+          muscle: "#c74d47",
+          tendon: "#e8dcc1",
+          nerve: "#f2c94c",
+          vessel: "#5fa9d6",
+          skin: "rgba(215, 143, 114, 0.18)"
+        };
+        let width = 0;
+        let height = 0;
+        let started = performance.now();
+
+        function resizeFallback() {
+          const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
+          width = window.innerWidth;
+          height = window.innerHeight;
+          fallbackCanvas.width = Math.max(1, Math.floor(width * ratio));
+          fallbackCanvas.height = Math.max(1, Math.floor(height * ratio));
+          fallbackCanvas.style.width = width + "px";
+          fallbackCanvas.style.height = height + "px";
+          ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        }
+
+        function scrollProgress() {
+          const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+          const value = Math.max(0, Math.min(1, window.scrollY / maxScroll));
+          if (progressFill) progressFill.style.width = Math.round(value * 100) + "%";
+          if (progressLabel) {
+            progressLabel.textContent =
+              value < 0.18 ? "Ouverture" :
+              value < 0.4 ? "Structure osseuse" :
+              value < 0.62 ? "Muscles et tendons" :
+              value < 0.84 ? "Nerfs et circulation" :
+              "Vue complete";
+          }
+          return value;
+        }
+
+        function line(points, color, size) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = size;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.beginPath();
+          points.forEach((point, index) => {
+            if (index === 0) ctx.moveTo(point[0], point[1]);
+            else ctx.lineTo(point[0], point[1]);
+          });
+          ctx.stroke();
+        }
+
+        function ellipse(x, y, rx, ry, color, stroke, size) {
+          ctx.beginPath();
+          ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+          if (color) {
+            ctx.fillStyle = color;
+            ctx.fill();
+          }
+          if (stroke) {
+            ctx.strokeStyle = stroke;
+            ctx.lineWidth = size || 2;
+            ctx.stroke();
+          }
+        }
+
+        function renderFallback(now) {
+          const progress = scrollProgress();
+          const t = (now - started) / 1000;
+          const intro = Math.min(1, t / 1.5);
+          const scale = Math.min(width / 430, height / 720) * (0.82 + intro * 0.18);
+          const cx = width * (0.5 + Math.sin(progress * Math.PI * 2) * 0.07);
+          const cy = height * 0.5 + 18;
+          const pulse = Math.sin(t * 2.2) * 0.04;
+          const split = progress * 48;
+          const alphaSkin = Math.max(0.08, 0.3 - progress * 0.16);
+
+          ctx.clearRect(0, 0, width, height);
+          ctx.fillStyle = colors.bg;
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.scale(scale, scale);
+          ctx.rotate(Math.sin(t * 0.28 + progress * 2) * 0.08);
+          ctx.globalAlpha = intro;
+
+          ctx.fillStyle = colors.skin.replace("0.18", alphaSkin.toFixed(2));
+          ellipse(0, -215, 35, 43, ctx.fillStyle, "rgba(215,143,114,0.42)", 2);
+          ellipse(0, -70, 72, 150, ctx.fillStyle, "rgba(215,143,114,0.34)", 2);
+
+          line([[0, -178], [0, -25], [0, 83]], colors.bone, 8);
+          ellipse(0, -220, 26, 32, "rgba(239,226,201,0.2)", colors.bone, 4);
+          ellipse(0, 66, 58, 31, "rgba(239,226,201,0.12)", colors.bone, 4);
+
+          for (let i = 0; i < 8; i += 1) {
+            const y = -148 + i * 16;
+            const w = 28 + i * 7;
+            line([[0, y], [-w - split * 0.25, y + 10]], colors.bone, 4);
+            line([[0, y], [w + split * 0.25, y + 10]], colors.bone, 4);
+          }
+
+          ellipse(-34 - split, -92, 24 * (1 + pulse), 96, "rgba(199,77,71,0.72)", null);
+          ellipse(34 + split, -92, 24 * (1 - pulse), 96, "rgba(199,77,71,0.72)", null);
+          ellipse(-50 - split, 82, 25 * (1 - pulse), 95, "rgba(199,77,71,0.7)", null);
+          ellipse(50 + split, 82, 25 * (1 + pulse), 95, "rgba(199,77,71,0.7)", null);
+
+          line([[-63 - split, -125], [-122 - split, -35], [-138 - split, 58]], colors.muscle, 16);
+          line([[63 + split, -125], [122 + split, -35], [138 + split, 58]], colors.muscle, 16);
+          line([[-45 - split, 75], [-62 - split, 198]], colors.muscle, 18);
+          line([[45 + split, 75], [62 + split, 198]], colors.muscle, 18);
+
+          line([[-136 - split, 54], [-142 - split, 85]], colors.tendon, 6);
+          line([[136 + split, 54], [142 + split, 85]], colors.tendon, 6);
+          line([[-62 - split, 190], [-72 - split, 235]], colors.tendon, 7);
+          line([[62 + split, 190], [72 + split, 235]], colors.tendon, 7);
+
+          line([[0, -198], [0, -28], [-52 - split * 0.35, 98], [-66 - split * 0.35, 202]], colors.nerve, 4);
+          line([[0, -60], [58 + split * 0.35, 42], [74 + split * 0.35, 148]], colors.nerve, 4);
+          line([[8, -120], [18, -32], [0, 90]], colors.vessel, 5);
+
+          ctx.globalAlpha = 0.28 + Math.sin(t * 3) * 0.12;
+          ctx.fillStyle = "#6fd0bd";
+          ctx.fillRect(-120 + Math.sin(t) * 90, -250, 5, 500);
+
+          ctx.restore();
+          window.requestAnimationFrame(renderFallback);
+        }
+
+        window.__fallbackSceneRunning = true;
+        window.addEventListener("resize", resizeFallback, { passive: true });
+        resizeFallback();
+        window.requestAnimationFrame(renderFallback);
+      })();
+
       function showStartupFallback(messageText) {
         if (window.__anatomyAppReady) return;
         const message = document.querySelector("#loadingMessage");
         if (message) message.textContent = messageText || "Chargement interrompu. Rechargez la page ou activez WebGL.";
         document.body.classList.add("has-startup-error");
+        const loader = document.querySelector("#loadingState");
+        if (loader) window.setTimeout(() => loader.classList.add("is-hidden"), 900);
       }
 
       window.addEventListener("error", (event) => {
@@ -156,8 +301,8 @@
       });
       window.setTimeout(() => {
         showStartupFallback("Chargement trop long. Rechargez la page ou ouvrez avec Chrome.");
-      }, 9000);
+      }, 3200);
     </script>
-    <script type="module" src="./src/app.js?v=20260624-7"></script>
+    <script type="module" src="./src/app.js?v=20260624-8"></script>
   </body>
 </html>
