@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-10" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-11" />
   </head>
   <body>
     <header class="brand-header">
@@ -174,6 +174,7 @@
           cyan: "#6fd0bd",
           skin: "#d78f72"
         };
+        var stageNames = ["Vue generale", "Structure osseuse", "Muscles et tendons", "Nerfs et circulation", "Synthese"];
 
         function addClass(node, name) {
           if (!node) return;
@@ -207,6 +208,23 @@
               "Vue complete";
           }
           return value;
+        }
+
+        function stageIndex(progress) {
+          if (progress < 0.18) return 0;
+          if (progress < 0.4) return 1;
+          if (progress < 0.62) return 2;
+          if (progress < 0.84) return 3;
+          return 4;
+        }
+
+        function stageAlpha(layer, progress, base) {
+          var stage = stageIndex(progress);
+          if (stage === 0 || stage === 4) return base;
+          if (stage === 1) return layer === "skeleton" || layer === "skin" ? base : base * 0.42;
+          if (stage === 2) return layer === "muscles" || layer === "tendons" ? base : base * 0.46;
+          if (stage === 3) return layer === "nerves" || layer === "vessels" ? base : base * 0.38;
+          return base;
         }
 
         function buildFallbackControls() {
@@ -250,6 +268,23 @@
           ctx.globalAlpha = 1;
         }
 
+        function curve(points, color, size, alpha) {
+          if (alpha != null) ctx.globalAlpha = alpha;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = size;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.beginPath();
+          ctx.moveTo(points[0][0], points[0][1]);
+          if (points.length === 4) {
+            ctx.bezierCurveTo(points[1][0], points[1][1], points[2][0], points[2][1], points[3][0], points[3][1]);
+          } else {
+            for (var i = 1; i < points.length; i += 1) ctx.lineTo(points[i][0], points[i][1]);
+          }
+          ctx.stroke();
+          ctx.globalAlpha = 1;
+        }
+
         function ellipse(x, y, rx, ry, fill, stroke, size, alpha) {
           ctx.save();
           if (alpha != null) ctx.globalAlpha = alpha;
@@ -280,6 +315,23 @@
           ctx.lineTo(tx, ty);
           ctx.stroke();
           ctx.fillText(text, tx + 7, ty + 4);
+          ctx.restore();
+        }
+
+        function drawSystemTag(text, x, y, color) {
+          ctx.save();
+          ctx.font = "11px Segoe UI, Arial, sans-serif";
+          ctx.textBaseline = "middle";
+          var widthText = ctx.measureText(text).width + 16;
+          ctx.fillStyle = "rgba(8, 12, 15, 0.78)";
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect ? ctx.roundRect(x, y - 13, widthText, 26, 7) : ctx.rect(x, y - 13, widthText, 26);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = "#f8fafc";
+          ctx.fillText(text, x + 8, y);
           ctx.restore();
         }
 
@@ -327,6 +379,16 @@
           }
         }
 
+        function drawMuscleFibers(split, opacity, pulse) {
+          var i;
+          for (i = 0; i < 6; i += 1) {
+            curve([[-52 - split + i * 7, -164], [-78 - split, -110 + i * 14], [-62 - split, -56 + i * 10], [-36 - split + i * 3, -20]], "#e16f69", 1.8, opacity * (0.44 + pulse));
+            curve([[52 + split - i * 7, -164], [78 + split, -110 + i * 14], [62 + split, -56 + i * 10], [36 + split - i * 3, -20]], "#e16f69", 1.8, opacity * (0.44 - pulse));
+            curve([[-64 - split + i * 5, 4], [-84 - split, 58 + i * 16], [-72 - split, 122 + i * 13], [-54 - split + i * 2, 185]], "#e16f69", 1.6, opacity * 0.38);
+            curve([[64 + split - i * 5, 4], [84 + split, 58 + i * 16], [72 + split, 122 + i * 13], [54 + split - i * 2, 185]], "#e16f69", 1.6, opacity * 0.38);
+          }
+        }
+
         function drawNerveBranches(split, opacity) {
           line([[0, -198], [0, -28], [-52 - split * 0.35, 98], [-66 - split * 0.35, 202]], colors.nerve, 4, opacity);
           line([[0, -60], [58 + split * 0.35, 42], [74 + split * 0.35, 148]], colors.nerve, 4, opacity);
@@ -337,9 +399,17 @@
           drawJoint(58 + split * 0.35, 42, 3.5, colors.nerve, opacity);
         }
 
+        function drawMicroVessels(split, opacity) {
+          curve([[4, -108], [42 + split * 0.2, -86], [52 + split * 0.55, -42], [72 + split, 12]], colors.artery, 2.2, opacity * 0.7);
+          curve([[-4, -100], [-42 - split * 0.2, -84], [-56 - split * 0.55, -36], [-76 - split, 18]], colors.vessel, 2.2, opacity * 0.72);
+          curve([[2, 82], [34 + split * 0.2, 112], [46 + split * 0.45, 160], [64 + split, 228]], colors.artery, 2.4, opacity * 0.72);
+          curve([[-2, 86], [-34 - split * 0.2, 112], [-46 - split * 0.45, 160], [-64 - split, 228]], colors.vessel, 2.4, opacity * 0.72);
+        }
+
         function renderFallback() {
           if (!ctx) return;
           var progress = scrollProgress();
+          var stage = stageIndex(progress);
           var t = (Date.now() - started) / 1000;
           var intro = Math.min(1, t / 1.15);
           var dissection = separationSlider ? Number(separationSlider.value || 0.34) : 0.34;
@@ -351,6 +421,12 @@
           var cy = height * 0.52;
           var pulse = Math.sin(t * 2.3 * speed) * 0.045;
           var scan = -150 + ((t * 80 * speed) % 300);
+          var skinOpacity = stageAlpha("skin", progress, Math.max(0.08, 0.28 * opacity));
+          var skeletonOpacity = stageAlpha("skeleton", progress, opacity);
+          var muscleOpacity = stageAlpha("muscles", progress, opacity);
+          var tendonOpacity = stageAlpha("tendons", progress, opacity);
+          var nerveOpacity = stageAlpha("nerves", progress, opacity);
+          var vesselOpacity = stageAlpha("vessels", progress, opacity);
 
           ctx.clearRect(0, 0, width, height);
           drawBackground(progress, t);
@@ -361,61 +437,63 @@
           ctx.globalAlpha = intro;
 
           if (activeLayers.skin) {
-            ellipse(0, -215, 38, 47, colors.skin, colors.skin, 2, Math.max(0.08, 0.28 * opacity));
-            ellipse(0, -74, 82, 158, colors.skin, colors.skin, 2, Math.max(0.06, 0.2 * opacity));
-            line([[-70, -118], [-128, -28], [-142, 68]], colors.skin, 18, 0.12 * opacity);
-            line([[70, -118], [128, -28], [142, 68]], colors.skin, 18, 0.12 * opacity);
-            line([[-48, 76], [-70, 230]], colors.skin, 22, 0.12 * opacity);
-            line([[48, 76], [70, 230]], colors.skin, 22, 0.12 * opacity);
+            ellipse(0, -215, 38, 47, colors.skin, colors.skin, 2, skinOpacity);
+            ellipse(0, -74, 82, 158, colors.skin, colors.skin, 2, skinOpacity * 0.72);
+            line([[-70, -118], [-128, -28], [-142, 68]], colors.skin, 18, skinOpacity * 0.44);
+            line([[70, -118], [128, -28], [142, 68]], colors.skin, 18, skinOpacity * 0.44);
+            line([[-48, 76], [-70, 230]], colors.skin, 22, skinOpacity * 0.44);
+            line([[48, 76], [70, 230]], colors.skin, 22, skinOpacity * 0.44);
           }
 
           if (activeLayers.muscles) {
-            ellipse(-34 - split, -100, 23 * (1 + pulse), 84, colors.muscle, null, 0, 0.74 * opacity);
-            ellipse(34 + split, -100, 23 * (1 - pulse), 84, colors.muscle, null, 0, 0.74 * opacity);
-            ellipse(-18 - split * 0.35, -74, 16, 102, "#9f3534", null, 0, 0.58 * opacity);
-            ellipse(18 + split * 0.35, -74, 16, 102, "#9f3534", null, 0, 0.58 * opacity);
-            ellipse(-52 - split, 84, 27 * (1 - pulse), 98, colors.muscle, null, 0, 0.7 * opacity);
-            ellipse(52 + split, 84, 27 * (1 + pulse), 98, colors.muscle, null, 0, 0.7 * opacity);
-            line([[-64 - split, -125], [-122 - split, -35], [-138 - split, 58]], colors.muscle, 16, 0.88 * opacity);
-            line([[64 + split, -125], [122 + split, -35], [138 + split, 58]], colors.muscle, 16, 0.88 * opacity);
-            line([[-46 - split, 75], [-62 - split, 198]], colors.muscle, 18, 0.9 * opacity);
-            line([[46 + split, 75], [62 + split, 198]], colors.muscle, 18, 0.9 * opacity);
+            ellipse(-34 - split, -100, 23 * (1 + pulse), 84, colors.muscle, null, 0, 0.74 * muscleOpacity);
+            ellipse(34 + split, -100, 23 * (1 - pulse), 84, colors.muscle, null, 0, 0.74 * muscleOpacity);
+            ellipse(-18 - split * 0.35, -74, 16, 102, "#9f3534", null, 0, 0.58 * muscleOpacity);
+            ellipse(18 + split * 0.35, -74, 16, 102, "#9f3534", null, 0, 0.58 * muscleOpacity);
+            ellipse(-52 - split, 84, 27 * (1 - pulse), 98, colors.muscle, null, 0, 0.7 * muscleOpacity);
+            ellipse(52 + split, 84, 27 * (1 + pulse), 98, colors.muscle, null, 0, 0.7 * muscleOpacity);
+            line([[-64 - split, -125], [-122 - split, -35], [-138 - split, 58]], colors.muscle, 16, 0.88 * muscleOpacity);
+            line([[64 + split, -125], [122 + split, -35], [138 + split, 58]], colors.muscle, 16, 0.88 * muscleOpacity);
+            line([[-46 - split, 75], [-62 - split, 198]], colors.muscle, 18, 0.9 * muscleOpacity);
+            line([[46 + split, 75], [62 + split, 198]], colors.muscle, 18, 0.9 * muscleOpacity);
+            drawMuscleFibers(split, muscleOpacity, pulse);
           }
 
           if (activeLayers.skeleton) {
-            line([[0, -178], [0, -25], [0, 84]], colors.bone, 8, opacity);
-            ellipse(0, -220, 29, 35, "rgba(239,226,201,0.18)", colors.bone, 4, opacity);
-            line([[-16, -195], [16, -195]], colors.bone, 4, opacity);
-            line([[-48, -150], [48, -150]], colors.bone, 5, opacity);
-            line([[-58, -136], [-108 - split, -42]], colors.bone, 5, opacity);
-            line([[58, -136], [108 + split, -42]], colors.bone, 5, opacity);
-            ellipse(0, 66, 60, 32, "rgba(239,226,201,0.1)", colors.bone, 4, opacity);
-            drawRibs(split, opacity);
-            line([[-30, 76], [-58 - split * 0.28, 228]], colors.bone, 8, opacity);
-            line([[30, 76], [58 + split * 0.28, 228]], colors.bone, 8, opacity);
-            drawJoint(-108 - split, -42, 7, colors.bone, opacity);
-            drawJoint(108 + split, -42, 7, colors.bone, opacity);
-            drawJoint(-58 - split * 0.28, 228, 8, colors.bone, opacity);
-            drawJoint(58 + split * 0.28, 228, 8, colors.bone, opacity);
+            line([[0, -178], [0, -25], [0, 84]], colors.bone, 8, skeletonOpacity);
+            ellipse(0, -220, 29, 35, "rgba(239,226,201,0.18)", colors.bone, 4, skeletonOpacity);
+            line([[-16, -195], [16, -195]], colors.bone, 4, skeletonOpacity);
+            line([[-48, -150], [48, -150]], colors.bone, 5, skeletonOpacity);
+            line([[-58, -136], [-108 - split, -42]], colors.bone, 5, skeletonOpacity);
+            line([[58, -136], [108 + split, -42]], colors.bone, 5, skeletonOpacity);
+            ellipse(0, 66, 60, 32, "rgba(239,226,201,0.1)", colors.bone, 4, skeletonOpacity);
+            drawRibs(split, skeletonOpacity);
+            line([[-30, 76], [-58 - split * 0.28, 228]], colors.bone, 8, skeletonOpacity);
+            line([[30, 76], [58 + split * 0.28, 228]], colors.bone, 8, skeletonOpacity);
+            drawJoint(-108 - split, -42, 7, colors.bone, skeletonOpacity);
+            drawJoint(108 + split, -42, 7, colors.bone, skeletonOpacity);
+            drawJoint(-58 - split * 0.28, 228, 8, colors.bone, skeletonOpacity);
+            drawJoint(58 + split * 0.28, 228, 8, colors.bone, skeletonOpacity);
           }
 
           if (activeLayers.tendons) {
-            line([[-136 - split, 54], [-142 - split, 86]], colors.tendon, 6, opacity);
-            line([[136 + split, 54], [142 + split, 86]], colors.tendon, 6, opacity);
-            line([[-62 - split, 190], [-72 - split, 235]], colors.tendon, 7, opacity);
-            line([[62 + split, 190], [72 + split, 235]], colors.tendon, 7, opacity);
+            line([[-136 - split, 54], [-142 - split, 86]], colors.tendon, 6, tendonOpacity);
+            line([[136 + split, 54], [142 + split, 86]], colors.tendon, 6, tendonOpacity);
+            line([[-62 - split, 190], [-72 - split, 235]], colors.tendon, 7, tendonOpacity);
+            line([[62 + split, 190], [72 + split, 235]], colors.tendon, 7, tendonOpacity);
           }
 
           if (activeLayers.nerves) {
-            drawNerveBranches(split, opacity);
+            drawNerveBranches(split, nerveOpacity);
           }
 
           if (activeLayers.vessels) {
-            ellipse(5, -108, 12, 15, colors.artery, null, 0, 0.9 * opacity);
-            line([[10, -126], [18, -32], [0, 90]], colors.artery, 5, opacity);
-            line([[-8, -96], [-22, -4], [-10, 86]], colors.vessel, 5, opacity);
-            line([[8, -46], [72 + split * 0.45, 8], [104 + split, 58]], colors.artery, 3.2, opacity * 0.88);
-            line([[-8, -40], [-72 - split * 0.45, 10], [-104 - split, 58]], colors.vessel, 3.2, opacity * 0.88);
+            ellipse(5, -108, 12, 15, colors.artery, null, 0, 0.9 * vesselOpacity);
+            line([[10, -126], [18, -32], [0, 90]], colors.artery, 5, vesselOpacity);
+            line([[-8, -96], [-22, -4], [-10, 86]], colors.vessel, 5, vesselOpacity);
+            line([[8, -46], [72 + split * 0.45, 8], [104 + split, 58]], colors.artery, 3.2, vesselOpacity * 0.88);
+            line([[-8, -40], [-72 - split * 0.45, 10], [-104 - split, 58]], colors.vessel, 3.2, vesselOpacity * 0.88);
+            drawMicroVessels(split, vesselOpacity);
           }
 
           ctx.globalAlpha = 0.24 + Math.sin(t * 3 * speed) * 0.1;
@@ -431,6 +509,9 @@
             drawLabel("Tendon d'Achille", -70, 215, -185, 220, colors.tendon);
           }
 
+          ctx.restore();
+          ctx.save();
+          drawSystemTag(stageNames[stage], Math.max(18, width * 0.05), Math.max(106, height * 0.15), stage === 1 ? colors.bone : stage === 2 ? colors.muscle : stage === 3 ? colors.nerve : colors.cyan);
           ctx.restore();
           window.requestAnimationFrame(renderFallback);
         }
@@ -479,6 +560,6 @@
         showStartupFallback("Mode compatible actif - animation anatomique sans WebGL.");
       }, 1800);
     </script>
-    <script type="module" src="./src/app.js?v=20260624-10"></script>
+    <script type="module" src="./src/app.js?v=20260624-11"></script>
   </body>
 </html>
