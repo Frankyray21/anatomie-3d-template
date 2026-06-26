@@ -1,0 +1,75 @@
+{
+  "sourceLabel": "Atlas scientifique BodyParts3D actif",
+  "replaceDemo": true,
+  "scale": 1,
+  "targetHeight": 3.35,
+  "attribution": "BodyParts3D, (c) The Database Center for Life Science licensed under CC Attribution 4.0 International",
+  "assets": [
+    {
+      "layer": "skin",
+      "name": "Peau complete BodyParts3D",
+      "path": "./assets/bodyparts3d/bp3d-skin.obj",
+      "type": "obj",
+      "color": "#d99073",
+      "opacity": 0.38,
+      "rotation": [-1.5707963268, 0, 0],
+      "preload": true,
+      "note": "Enveloppe cutanee complete issue du concept FMA7163 Skin dans BodyParts3D."
+    },
+    {
+      "layer": "skeleton",
+      "name": "Squelette BodyParts3D",
+      "path": "./assets/bodyparts3d/bp3d-skeleton.obj",
+      "type": "obj",
+      "color": "#efe2c9",
+      "opacity": 0.98,
+      "rotation": [-1.5707963268, 0, 0],
+      "preload": false,
+      "note": "Squelette in vivo FMA23876, fusion de 138 maillages elementaires BodyParts3D."
+    },
+    {
+      "layer": "muscles",
+      "name": "Grands muscles BodyParts3D",
+      "path": "./assets/bodyparts3d/bp3d-major-muscles.obj",
+      "type": "obj",
+      "color": "#c74d47",
+      "opacity": 0.92,
+      "rotation": [-1.5707963268, 0, 0],
+      "preload": false,
+      "note": "Sous-ensemble mobile de muscles reels: deltoides, pectoraux, biceps, triceps, rectus femoris, soleus, gastrocnemius et biceps femoris."
+    },
+    {
+      "layer": "tendons",
+      "name": "Tendons BodyParts3D",
+      "path": "./assets/bodyparts3d/bp3d-tendons.obj",
+      "type": "obj",
+      "color": "#e8dcc1",
+      "opacity": 0.96,
+      "rotation": [-1.5707963268, 0, 0],
+      "preload": false,
+      "note": "Concept FMA9721 Tendon, dont tendons calcaneens et tendons associes."
+    },
+    {
+      "layer": "nerves",
+      "name": "Systeme nerveux BodyParts3D",
+      "path": "./assets/bodyparts3d/bp3d-nervous-system.obj",
+      "type": "obj",
+      "color": "#f2c94c",
+      "opacity": 0.98,
+      "rotation": [-1.5707963268, 0, 0],
+      "preload": false,
+      "note": "Systeme nerveux FMA7157, fusion de 60 maillages elementaires BodyParts3D."
+    },
+    {
+      "layer": "vessels",
+      "name": "Vaisseaux BodyParts3D",
+      "path": "./assets/bodyparts3d/bp3d-major-vessels.obj",
+      "type": "obj",
+      "color": "#5fa9d6",
+      "opacity": 0.88,
+      "rotation": [-1.5707963268, 0, 0],
+      "preload": false,
+      "note": "Arbre arteriel systemique, systeme veineux systemique, arbre arteriel pulmonaire et arbre veineux portal BodyParts3D."
+    }
+  ]
+}

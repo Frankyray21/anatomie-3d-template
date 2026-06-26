@@ -1,0 +1,23 @@
+BodyParts3D scientific anatomy assets
+
+The OBJ files in this directory were generated from official BodyParts3D
+polygon mesh data reduced at 99%.
+
+Attribution required by the source license:
+BodyParts3D, (c) The Database Center for Life Science licensed under CC Attribution 4.0 International
+
+Source pages:
+https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html
+https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html
+
+Generated layers:
+- bp3d-skin.obj: Skin, FMA7163.
+- bp3d-skeleton.obj: Skeleton in vivo, FMA23876.
+- bp3d-major-muscles.obj: mobile subset of major visible muscle concepts.
+- bp3d-tendons.obj: Tendon, FMA9721.
+- bp3d-nervous-system.obj: Nervous system, FMA7157.
+- bp3d-major-vessels.obj: systemic arterial tree, systemic venous system,
+  pulmonary arterial tree, and portal venous tree.
+
+These files remain educational/visualization assets and are not medical
+diagnostic software.

@@ -1,6 +1,6 @@
 # Atlas anatomique 3D anime
 
-Experience Three.js Machines Roger International pour presenter le corps humain en ouverture animee, puis en couches synchronisees au scroll: os, muscles, tendons, nerfs, vaisseaux et peau translucide.
+Experience Three.js Machines Roger International pour presenter un atlas BodyParts3D en ouverture animee, puis en couches synchronisees au scroll: os, muscles, tendons, nerfs, vaisseaux et peau translucide.
 
 ## Lancer
 
@@ -30,21 +30,27 @@ https://frankyray21.github.io/anatomie-3d-template/
 
 ## Fidelite scientifique
 
-La scene incluse est une demonstration procedurale: elle sert a valider l'animation, l'ergonomie, la dissection par couches et l'integration web. Pour une version scientifiquement fidele, utilisez des maillages anatomiques valides.
+La version de production charge des maillages officiels BodyParts3D / Anatomography depuis `assets/bodyparts3d/`.
 
-Source conseillee: BodyParts3D / Anatomography. Le projet fournit des donnees polygonales OBJ et des tables d'identifiants anatomiques, sous licence Creative Commons Attribution 4.0.
+Source: BodyParts3D est une base 3D Homo sapiens du Database Center for Life Science. Elle associe des concepts anatomiques FMA a des structures 3D d'un modele corps entier d'homme adulte. Les fichiers de ce projet sont derives des paquets OBJ officiels reduits a 99%.
 
-Workflow recommande:
+Les couches incluses sont optimisees pour mobile:
 
-1. Telecharger les OBJ BodyParts3D.
-2. Isoler les structures necessaires dans Blender ou MeshLab.
-3. Decimer raisonnablement les meshes pour le web.
-4. Exporter en `.glb`.
-5. Copier les fichiers dans `assets/bodyparts3d/`.
-6. Renommer `assets/anatomy-manifest.example.json` en `assets/anatomy-manifest.json`.
-7. Declarer chaque structure dans le manifeste.
+- `bp3d-skin.obj`: peau complete, FMA7163.
+- `bp3d-skeleton.obj`: squelette in vivo, FMA23876.
+- `bp3d-major-muscles.obj`: sous-ensemble de grands muscles visibles.
+- `bp3d-tendons.obj`: tendon, FMA9721.
+- `bp3d-nervous-system.obj`: systeme nerveux, FMA7157.
+- `bp3d-major-vessels.obj`: arbres arteriels/veineux principaux.
 
-Le code charge automatiquement `assets/anatomy-manifest.json` s'il existe. Si `replaceDemo` vaut `true`, la maquette procedurale est masquee et seules les donnees importees sont affichees.
+Le dataset complet avec tous les muscles et tous les vaisseaux depasse largement une taille confortable pour mobile. Le chargeur utilise donc une strategie progressive: la peau est chargee a l'ouverture, puis les couches lourdes se chargent au scroll ou a l'activation.
+
+Pour regenerer les fichiers apres avoir telecharge les donnees officielles dans `work/bodyparts3d/`:
+
+```powershell
+node outputs\anatomie-3d-template\tools\build-bodyparts3d-web-assets.mjs --selection-only
+node outputs\anatomie-3d-template\tools\build-bodyparts3d-web-assets.mjs
+```
 
 ## Fichiers
 
@@ -55,6 +61,11 @@ Le code charge automatiquement `assets/anatomy-manifest.json` s'il existe. Si `r
 
 ## Attribution BodyParts3D
 
-Si vous utilisez BodyParts3D, gardez l'attribution demandee par la licence:
+Attribution demandee par la licence:
 
 `BodyParts3D, (c) The Database Center for Life Science licensed under CC Attribution 4.0 International`
+
+Pages officielles:
+
+- https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html
+- https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html
