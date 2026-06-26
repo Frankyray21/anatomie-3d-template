@@ -1,0 +1,44 @@
+[
+  {
+    "file": "C:\\Users\\Frank\\Documents\\Codex\\2026-06-24\\cr-er-une-animation-ou-trouve\\outputs\\anatomie-3d-template\\assets\\bodyparts3d\\bp3d-skin.obj",
+    "files": 1,
+    "vertices": 102467,
+    "faces": 203382,
+    "bytes": 14261697
+  },
+  {
+    "file": "C:\\Users\\Frank\\Documents\\Codex\\2026-06-24\\cr-er-une-animation-ou-trouve\\outputs\\anatomie-3d-template\\assets\\bodyparts3d\\bp3d-skeleton.obj",
+    "files": 138,
+    "vertices": 413338,
+    "faces": 710464,
+    "bytes": 56428556
+  },
+  {
+    "file": "C:\\Users\\Frank\\Documents\\Codex\\2026-06-24\\cr-er-une-animation-ou-trouve\\outputs\\anatomie-3d-template\\assets\\bodyparts3d\\bp3d-major-muscles.obj",
+    "files": 32,
+    "vertices": 63858,
+    "faces": 92404,
+    "bytes": 7398363
+  },
+  {
+    "file": "C:\\Users\\Frank\\Documents\\Codex\\2026-06-24\\cr-er-une-animation-ou-trouve\\outputs\\anatomie-3d-template\\assets\\bodyparts3d\\bp3d-tendons.obj",
+    "files": 6,
+    "vertices": 3977,
+    "faces": 6108,
+    "bytes": 436636
+  },
+  {
+    "file": "C:\\Users\\Frank\\Documents\\Codex\\2026-06-24\\cr-er-une-animation-ou-trouve\\outputs\\anatomie-3d-template\\assets\\bodyparts3d\\bp3d-nervous-system.obj",
+    "files": 60,
+    "vertices": 179170,
+    "faces": 322990,
+    "bytes": 24506472
+  },
+  {
+    "file": "C:\\Users\\Frank\\Documents\\Codex\\2026-06-24\\cr-er-une-animation-ou-trouve\\outputs\\anatomie-3d-template\\assets\\bodyparts3d\\bp3d-major-vessels.obj",
+    "files": 496,
+    "vertices": 367208,
+    "faces": 649528,
+    "bytes": 50926643
+  }
+]

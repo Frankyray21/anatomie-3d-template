@@ -211,10 +211,28 @@ const importedRoot = new THREE.Group();
 importedRoot.name = "Validated imported anatomy";
 anatomyRoot.add(importedRoot);
 
+const importedLayers = {};
+Object.keys(layerConfig).forEach((key) => {
+  const group = new THREE.Group();
+  group.name = `imported-${key}`;
+  group.userData.layer = key;
+  importedRoot.add(group);
+  importedLayers[key] = group;
+});
+
 const raycaster = new THREE.Raycaster();
 const interactive = [];
 const labels = [];
 const animatedParts = [];
+let validatedManifest = null;
+let manifestScale = 1;
+let manifestTargetHeight = 3.35;
+let manifestReplaceDemo = false;
+let manifestLoadedCount = 0;
+let importedRootNormalized = false;
+const layerAssetMap = new Map();
+const assetLoadState = new Map();
+let assetQueue = Promise.resolve();
 let lastFrameTime = 0;
 let lastLayerState = {
   separation: Number.NaN,
@@ -296,8 +314,12 @@ function buildInterface() {
   layerList.addEventListener("change", (event) => {
     const input = event.target.closest(".layer-toggle");
     if (!input) return;
-    const group = layers[input.dataset.layer];
+    const layer = input.dataset.layer;
+    const group = layers[layer];
+    const importedGroup = importedLayers[layer];
     if (group) group.visible = input.checked;
+    if (importedGroup) importedGroup.visible = input.checked;
+    if (input.checked) ensureLayerAssets(layer);
   });
 
   separationSlider.addEventListener("input", () => {
@@ -357,6 +379,7 @@ function handleScroll() {
   state.scrollProgress = THREE.MathUtils.clamp(window.scrollY / maxScroll, 0, 1);
   if (progressFill) progressFill.style.width = `${Math.round(state.scrollProgress * 100)}%`;
   updateActiveStory();
+  queueScientificLayersForScroll();
 }
 
 function updateActiveStory() {
@@ -892,12 +915,76 @@ async function loadValidatedManifest() {
     const response = await fetch("./assets/anatomy-manifest.json", { cache: "no-store" });
     if (!response.ok) return;
     const manifest = await response.json();
+    validatedManifest = manifest;
+    manifestScale = manifest.scale || 1;
+    manifestTargetHeight = manifest.targetHeight || manifestTargetHeight;
+    manifestReplaceDemo = manifest.replaceDemo === true;
     sourceStatus.textContent = manifest.sourceLabel || "Atlas valide charge";
-    if (manifest.replaceDemo) demoRoot.visible = false;
-    await Promise.all((manifest.assets || []).map((asset) => loadAsset(asset, manifest.scale || 1)));
+    selectedName.textContent = "Atlas BodyParts3D";
+    selectedSystem.textContent = "Source anatomique scientifique chargee progressivement.";
+    selectedNote.textContent = manifest.attribution || "BodyParts3D, (c) The Database Center for Life Science licensed under CC Attribution 4.0 International";
+    document.body.classList.add("has-validated-atlas");
+
+    (manifest.assets || []).forEach((asset) => {
+      const layer = layerConfig[asset.layer] ? asset.layer : "skeleton";
+      if (!layerAssetMap.has(layer)) layerAssetMap.set(layer, []);
+      layerAssetMap.get(layer).push(asset);
+    });
+
+    const preloadAssets = (manifest.assets || []).filter((asset) => asset.preload !== false);
+    await Promise.all(preloadAssets.map((asset) => enqueueAssetLoad(asset)));
+    if (manifestReplaceDemo && preloadAssets.length) demoRoot.visible = false;
+    queueScientificLayersForScroll();
   } catch (error) {
     console.info("Aucun manifeste anatomique externe charge.", error);
   }
+}
+
+function queueScientificLayersForScroll() {
+  if (!validatedManifest) return;
+  ensureLayerAssets("skin");
+  if (state.scrollProgress > 0.12 || state.tour) ensureLayerAssets("skeleton");
+  if (state.scrollProgress > 0.36 || state.tour) {
+    ensureLayerAssets("muscles");
+    ensureLayerAssets("tendons");
+  }
+  if (state.scrollProgress > 0.58 || state.tour) {
+    ensureLayerAssets("nerves");
+    ensureLayerAssets("vessels");
+  }
+}
+
+function ensureLayerAssets(layer) {
+  const assets = layerAssetMap.get(layer);
+  if (!assets || !assets.length) return Promise.resolve();
+  return Promise.all(assets.map((asset) => enqueueAssetLoad(asset)));
+}
+
+function enqueueAssetLoad(asset) {
+  const key = asset.path;
+  if (assetLoadState.has(key)) return assetLoadState.get(key);
+
+  const promise = assetQueue
+    .then(async () => {
+      sourceStatus.textContent = `Chargement BodyParts3D: ${asset.name || asset.layer}`;
+      await loadAsset(asset, manifestScale);
+      manifestLoadedCount += 1;
+      if (!importedRootNormalized) {
+        normalizeImportedRoot(manifestTargetHeight);
+        importedRootNormalized = true;
+      }
+      updateLayerState(true);
+      if (manifestReplaceDemo && manifestLoadedCount > 0) demoRoot.visible = false;
+      sourceStatus.textContent = `Atlas BodyParts3D actif (${manifestLoadedCount}/${(validatedManifest.assets || []).length})`;
+    })
+    .catch((error) => {
+      sourceStatus.textContent = `Erreur de chargement: ${asset.name || asset.layer}`;
+      console.warn("Asset BodyParts3D non charge", asset, error);
+    });
+
+  assetLoadState.set(key, promise);
+  assetQueue = promise.catch(() => {});
+  return promise;
 }
 
 async function loadAsset(asset, globalScale) {
@@ -928,7 +1015,10 @@ async function loadAsset(asset, globalScale) {
         system: layerConfig[layer].label,
         note: asset.note || "Mesh charge depuis le manifeste anatomique."
       };
+      child.userData.baseScale = child.scale.clone();
+      child.userData.baseOpacity = opacity;
       interactive.push(child);
+      if (layer === "muscles") animatedParts.push(child);
     }
   });
   object.position.fromArray(asset.position || [0, 0, 0]);
@@ -936,7 +1026,24 @@ async function loadAsset(asset, globalScale) {
   const scale = (asset.scale || 1) * globalScale;
   object.scale.setScalar(scale);
   object.name = asset.name || "Imported anatomy asset";
-  importedRoot.add(object);
+  importedLayers[layer].add(object);
+}
+
+function normalizeImportedRoot(targetHeight) {
+  if (!importedRoot.children.length) return;
+  importedRoot.position.set(0, 0, 0);
+  importedRoot.scale.setScalar(1);
+
+  const box = new THREE.Box3().setFromObject(importedRoot);
+  if (box.isEmpty()) return;
+
+  const size = box.getSize(new THREE.Vector3());
+  if (size.y <= 0) return;
+
+  const center = box.getCenter(new THREE.Vector3());
+  const scale = targetHeight / size.y;
+  importedRoot.scale.setScalar(scale);
+  importedRoot.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
 }
 
 function updateLayerState(force = false) {
@@ -954,8 +1061,9 @@ function updateLayerState(force = false) {
   };
 
   Object.entries(layerConfig).forEach(([key, config]) => {
-    const group = layers[key];
-    group.position.copy(config.separation).multiplyScalar(state.separation);
+    [layers[key], importedLayers[key]].forEach((group) => {
+      if (group) group.position.copy(config.separation).multiplyScalar(state.separation);
+    });
   });
 
   scene.traverse((object) => {
@@ -963,7 +1071,7 @@ function updateLayerState(force = false) {
     const anatomy = object.userData.anatomy;
     if (!anatomy) return;
     const config = layerConfig[anatomy.layer];
-    const base = config ? config.opacity : 1;
+    const base = object.userData.baseOpacity != null ? object.userData.baseOpacity : config ? config.opacity : 1;
     const target = Math.min(1, base * state.globalOpacity);
     object.material.opacity = target;
     object.material.transparent = target < 0.98;

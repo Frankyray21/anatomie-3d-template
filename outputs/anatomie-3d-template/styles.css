@@ -348,6 +348,12 @@ body.compat-atlas .source-pill {
   background: rgba(111, 208, 189, 0.1);
 }
 
+body.has-validated-atlas .source-pill {
+  border-color: rgba(244, 176, 0, 0.58);
+  color: #fff4bd;
+  background: rgba(244, 176, 0, 0.14);
+}
+
 body.compat-atlas .status-dot {
   background: #6fd0bd;
   box-shadow: 0 0 0 6px rgba(111, 208, 189, 0.13);
@@ -423,6 +429,17 @@ input[type="range"] {
 
 .selected-card p + p {
   margin-top: 8px;
+}
+
+.source-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.source-card p + p {
+  margin-top: 6px;
 }
 
 .label-layer {
