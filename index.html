@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-15" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-16" />
   </head>
-  <body class="has-realistic-reference">
+  <body class="realistic-pending">
     <header class="brand-header">
       <a class="brand-mark" href="#ouverture" aria-label="Machines Roger International">
         <img src="./assets/img/machines-roger-logo.png" alt="Machines Roger International" />
@@ -102,7 +102,7 @@
         <header class="panel-header">
           <p class="kicker">MRI Anatomy</p>
           <h1>Atlas anatomique 3D</h1>
-          <div class="source-pill" id="sourceStatus">Mode realiste CC BY</div>
+          <div class="source-pill" id="sourceStatus">Initialisation realiste</div>
         </header>
 
         <section class="panel-section">
@@ -586,21 +586,16 @@
     <script>
       (function () {
         var iframe = document.getElementById("realisticAtlas");
-        if (!iframe || !window.Sketchfab) {
-          if (iframe) {
-            iframe.src = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_watermark=0&ui_hint=0";
-          }
-          return;
-        }
+        var bodyPartsRetries = 0;
 
-        var client = new Sketchfab(iframe);
-        var queuedScroll = false;
-        var apiReady = false;
-        var apiRef = null;
-        var embedUrl = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=1&ui_watermark=0&ui_hint=0";
-        var readinessTimer = window.setTimeout(function () {
-          if (apiReady || !document.body.classList.contains("has-realistic-reference")) return;
-          document.body.classList.remove("has-realistic-reference");
+        window.__showRealisticAtlas = function () {
+          var status = document.getElementById("sourceStatus");
+          if (status) status.textContent = "Mode realiste indisponible";
+          return false;
+        };
+
+        function switchToBodyParts() {
+          document.body.classList.remove("has-realistic-reference", "realistic-pending");
           document.body.classList.add("realistic-unavailable");
           var status = document.getElementById("sourceStatus");
           var toggle = document.getElementById("bodyAtlasToggle");
@@ -608,14 +603,36 @@
           if (status) status.textContent = "Atlas local BodyParts3D";
           if (toggle) toggle.classList.add("is-active");
           if (realistic) realistic.classList.remove("is-active");
-          if (window.__requestBodyParts3D) window.__requestBodyParts3D();
+          if (window.__requestBodyParts3D) {
+            window.__requestBodyParts3D();
+          } else if (bodyPartsRetries < 20) {
+            bodyPartsRetries += 1;
+            window.setTimeout(switchToBodyParts, 250);
+          }
+        }
+
+        if (!iframe || !window.Sketchfab) {
+          switchToBodyParts();
+          return;
+        }
+
+        var client = new Sketchfab(iframe);
+        var queuedScroll = false;
+        var apiReady = false;
+        var apiRef = null;
+        var baseCamera = null;
+        var baseDistance = 1;
+        var embedUrl = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=1&ui_watermark=0&ui_hint=0";
+        var readinessTimer = window.setTimeout(function () {
+          if (apiReady) return;
+          switchToBodyParts();
         }, 6500);
         var cameraStops = [
-          { eye: [3.4, 0.3, 6.0], target: [0.0, 0.02, 0.0] },
-          { eye: [2.7, 1.0, 5.7], target: [0.0, 0.16, 0.0] },
-          { eye: [-3.5, 0.2, 5.9], target: [0.0, 0.02, 0.0] },
-          { eye: [2.8, 1.45, 5.6], target: [0.0, 0.2, 0.0] },
-          { eye: [3.7, 0.45, 6.2], target: [0.0, 0.04, 0.0] }
+          { yaw: -0.1, lift: 0.02, distance: 1 },
+          { yaw: 0.16, lift: 0.05, distance: 1.08 },
+          { yaw: -0.2, lift: 0.03, distance: 1.14 },
+          { yaw: 0.12, lift: 0.07, distance: 1.11 },
+          { yaw: -0.04, lift: 0.02, distance: 1.18 }
         ];
 
         function mix(a, b, t) {
@@ -626,23 +643,55 @@
           return [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
         }
 
+        function vectorLength(v) {
+          return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+        }
+
         function smoothStep(t) {
           return t * t * (3 - 2 * t);
         }
 
-        function responsiveEye(eye, target) {
+        function zoomScale() {
           var width = window.innerWidth || document.documentElement.clientWidth || 1280;
-          var scale = width < 720 ? 1.46 : width < 1100 ? 1.22 : 1;
+          return width < 720 ? 7.4 : width < 1100 ? 6.2 : 5.15;
+        }
+
+        function rotateY(vector, radians) {
+          var c = Math.cos(radians);
+          var s = Math.sin(radians);
           return [
-            target[0] + (eye[0] - target[0]) * scale,
-            target[1] + (eye[1] - target[1]) * scale,
-            target[2] + (eye[2] - target[2]) * scale
+            vector[0] * c - vector[2] * s,
+            vector[1],
+            vector[0] * s + vector[2] * c
           ];
         }
 
-        function driveCamera() {
+        function cameraFromStop(stop) {
+          var target = [
+            baseCamera.target[0],
+            baseCamera.target[1] + baseDistance * stop.lift,
+            baseCamera.target[2]
+          ];
+          var direction = [
+            baseCamera.position[0] - baseCamera.target[0],
+            baseCamera.position[1] - baseCamera.target[1],
+            baseCamera.position[2] - baseCamera.target[2]
+          ];
+          var rotated = rotateY(direction, stop.yaw);
+          var scale = zoomScale() * stop.distance;
+          return {
+            eye: [
+              target[0] + rotated[0] * scale,
+              target[1] + rotated[1] * scale,
+              target[2] + rotated[2] * scale
+            ],
+            target: target
+          };
+        }
+
+        function driveCamera(immediate) {
           queuedScroll = false;
-          if (!apiReady || !document.body.classList.contains("has-realistic-reference")) return;
+          if (!apiReady || !baseCamera) return;
           var doc = document.documentElement;
           var maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
           var progress = Math.max(0, Math.min(1, (window.pageYOffset || doc.scrollTop || 0) / maxScroll));
@@ -651,10 +700,12 @@
           var t = smoothStep(scaled - index);
           var start = cameraStops[index];
           var end = cameraStops[index + 1];
-          var target = vectorMix(start.target, end.target, t);
-          var eye = responsiveEye(vectorMix(start.eye, end.eye, t), target);
+          var startCamera = cameraFromStop(start);
+          var endCamera = cameraFromStop(end);
+          var target = vectorMix(startCamera.target, endCamera.target, t);
+          var eye = vectorMix(startCamera.eye, endCamera.eye, t);
           try {
-            apiRef.setCameraLookAt(eye, target, 0.85);
+            apiRef.setCameraLookAt(eye, target, immediate ? 0 : 0.85);
           } catch (error) {
             apiReady = false;
           }
@@ -665,6 +716,24 @@
           queuedScroll = true;
           window.requestAnimationFrame(driveCamera);
         }
+
+        window.__showRealisticAtlas = function () {
+          if (!apiReady || !baseCamera) {
+            var status = document.getElementById("sourceStatus");
+            if (status) status.textContent = "Initialisation du modele realiste";
+            return false;
+          }
+          document.body.classList.remove("realistic-pending", "realistic-unavailable");
+          document.body.classList.add("has-realistic-reference", "realistic-ready");
+          var status = document.getElementById("sourceStatus");
+          var toggle = document.getElementById("bodyAtlasToggle");
+          var realistic = document.getElementById("realisticToggle");
+          if (status) status.textContent = "Mode realiste CC BY";
+          if (toggle) toggle.classList.remove("is-active");
+          if (realistic) realistic.classList.add("is-active");
+          driveCamera(true);
+          return true;
+        };
 
         client.init("e402d3d541eb4b199c57d5410f5d3c57", {
           autostart: 1,
@@ -678,14 +747,61 @@
             apiRef = api;
             api.start();
             api.addEventListener("viewerready", function () {
-              apiReady = true;
               window.clearTimeout(readinessTimer);
-              document.body.classList.add("realistic-ready");
-              driveCamera();
+              try {
+                if (api.setUserInteraction) api.setUserInteraction(false);
+              } catch (error) {}
+              try {
+                if (api.setEnableCameraConstraints) api.setEnableCameraConstraints(false, {});
+              } catch (error) {}
+              try {
+                if (api.setFov) api.setFov((window.innerWidth || 1280) < 720 ? 60 : 52);
+              } catch (error) {}
+
+              var captureRequested = false;
+              var captureCamera = function () {
+                if (captureRequested) return;
+                captureRequested = true;
+                window.setTimeout(function () {
+                  if (!api.getCameraLookAt) {
+                    switchToBodyParts();
+                    return;
+                  }
+                  api.getCameraLookAt(function (error, camera) {
+                    if (error || !camera || !camera.position || !camera.target) {
+                      switchToBodyParts();
+                      return;
+                    }
+                    baseCamera = camera;
+                    baseDistance = Math.max(1, vectorLength([
+                      camera.position[0] - camera.target[0],
+                      camera.position[1] - camera.target[1],
+                      camera.position[2] - camera.target[2]
+                    ]));
+                    apiReady = true;
+                    driveCamera(true);
+                    window.__showRealisticAtlas();
+                  });
+                }, 650);
+              };
+
+              window.setTimeout(function () {
+                if (!apiReady) captureCamera();
+              }, 2800);
+
+              try {
+                if (api.recenterCamera) {
+                  api.recenterCamera(captureCamera);
+                } else {
+                  captureCamera();
+                }
+              } catch (error) {
+                captureCamera();
+              }
             });
           },
           error: function () {
-            iframe.src = embedUrl;
+            switchToBodyParts();
           }
         });
 
@@ -693,6 +809,6 @@
         window.addEventListener("resize", queueCamera);
       })();
     </script>
-    <script type="module" src="./src/app.js?v=20260624-15"></script>
+    <script type="module" src="./src/app.js?v=20260624-16"></script>
   </body>
 </html>

@@ -343,6 +343,7 @@ function buildInterface() {
 
   if (realisticToggle) {
     realisticToggle.addEventListener("click", () => {
+      if (window.__showRealisticAtlas && !window.__showRealisticAtlas()) return;
       document.body.classList.add("has-realistic-reference");
       realisticToggle.classList.add("is-active");
       if (bodyAtlasToggle) bodyAtlasToggle.classList.remove("is-active");
