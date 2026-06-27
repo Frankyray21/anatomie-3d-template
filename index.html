@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-12" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-13" />
   </head>
-  <body>
+  <body class="has-realistic-reference">
     <header class="brand-header">
       <a class="brand-mark" href="#ouverture" aria-label="Machines Roger International">
         <img src="./assets/img/machines-roger-logo.png" alt="Machines Roger International" />
@@ -23,12 +23,27 @@
 
     <main class="app-shell">
       <div class="scene-stage">
+        <iframe
+          id="realisticAtlas"
+          class="realistic-atlas"
+          title="Ecorche - Anatomy study par Beatriz Gomez Santamaria"
+          allow="autoplay; fullscreen; xr-spatial-tracking"
+          allowfullscreen
+          mozallowfullscreen="true"
+          webkitallowfullscreen="true">
+        </iframe>
         <canvas id="fallbackScene" aria-hidden="true"></canvas>
         <canvas id="scene" aria-label="Vue 3D animee du corps humain"></canvas>
         <div class="vignette" aria-hidden="true"></div>
       </div>
 
       <section class="topbar" aria-label="Commandes principales">
+        <button class="icon-button is-active" id="realisticToggle" title="Mode realiste" aria-label="Mode realiste">
+          <span aria-hidden="true">3D</span>
+        </button>
+        <button class="icon-button" id="bodyAtlasToggle" title="Atlas BodyParts3D" aria-label="Atlas BodyParts3D">
+          <span aria-hidden="true">B</span>
+        </button>
         <button class="icon-button is-active" id="rotateToggle" title="Rotation automatique" aria-label="Rotation automatique">
           <span aria-hidden="true">R</span>
         </button>
@@ -86,7 +101,7 @@
         <header class="panel-header">
           <p class="kicker">MRI Anatomy</p>
           <h1>Atlas anatomique 3D</h1>
-          <div class="source-pill" id="sourceStatus">Chargement BodyParts3D</div>
+          <div class="source-pill" id="sourceStatus">Mode realiste CC BY</div>
         </header>
 
         <section class="panel-section">
@@ -113,13 +128,13 @@
         <section class="panel-section selected-card" aria-live="polite">
           <h2 id="selectedName">Cliquez une structure</h2>
           <p id="selectedSystem">Les couches os, muscles, tendons, nerfs, vaisseaux et peau sont separables.</p>
-          <p id="selectedNote">BodyParts3D, (c) The Database Center for Life Science licensed under CC Attribution 4.0 International.</p>
+          <p id="selectedNote">Ouverture: Ecorche - Anatomy study par Beatriz Gomez Santamaria, CC Attribution. Couche scientifique: BodyParts3D DBCLS, CC BY 4.0.</p>
         </section>
 
         <section class="panel-section source-card">
           <h2>Source</h2>
-          <p>BodyParts3D / Anatomography, atlas 3D Homo sapiens base sur des concepts FMA.</p>
-          <p>Licence CC BY 4.0 avec attribution DBCLS.</p>
+          <p>Ouverture realiste: Ecorche - Anatomy study, Beatriz Gomez Santamaria, CC Attribution.</p>
+          <p>Atlas scientifique: BodyParts3D / Anatomography, DBCLS, concepts FMA, CC BY 4.0.</p>
         </section>
       </aside>
 
@@ -566,6 +581,83 @@
         showStartupFallback("Mode compatible actif - animation anatomique sans WebGL.");
       }, 1800);
     </script>
-    <script type="module" src="./src/app.js?v=20260624-12"></script>
+    <script src="https://static.sketchfab.com/api/sketchfab-viewer-1.12.1.js"></script>
+    <script>
+      (function () {
+        var iframe = document.getElementById("realisticAtlas");
+        if (!iframe || !window.Sketchfab) {
+          if (iframe) {
+            iframe.src = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_watermark=0&ui_hint=0";
+          }
+          return;
+        }
+
+        var client = new Sketchfab(iframe);
+        var queuedScroll = false;
+        var apiReady = false;
+        var apiRef = null;
+        var cameraStops = [
+          { eye: [2.2, 0.2, 4.0], target: [0.0, 0.0, 0.0] },
+          { eye: [0.4, 0.8, 3.2], target: [0.0, 0.25, 0.0] },
+          { eye: [-2.3, 0.1, 3.4], target: [0.0, 0.0, 0.0] },
+          { eye: [1.2, 1.5, 2.9], target: [0.0, 0.35, 0.0] },
+          { eye: [2.8, 0.35, 3.6], target: [0.0, 0.05, 0.0] }
+        ];
+
+        function mix(a, b, t) {
+          return a + (b - a) * t;
+        }
+
+        function vectorMix(a, b, t) {
+          return [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
+        }
+
+        function driveCamera() {
+          queuedScroll = false;
+          if (!apiReady || !document.body.classList.contains("has-realistic-reference")) return;
+          var doc = document.documentElement;
+          var maxScroll = Math.max(1, doc.scrollHeight - window.innerHeight);
+          var progress = Math.max(0, Math.min(1, (window.pageYOffset || doc.scrollTop || 0) / maxScroll));
+          var scaled = progress * (cameraStops.length - 1);
+          var index = Math.min(cameraStops.length - 2, Math.floor(scaled));
+          var t = scaled - index;
+          var start = cameraStops[index];
+          var end = cameraStops[index + 1];
+          apiRef.setCameraLookAt(vectorMix(start.eye, end.eye, t), vectorMix(start.target, end.target, t), 0.45);
+        }
+
+        function queueCamera() {
+          if (queuedScroll) return;
+          queuedScroll = true;
+          window.requestAnimationFrame(driveCamera);
+        }
+
+        client.init("e402d3d541eb4b199c57d5410f5d3c57", {
+          autostart: 1,
+          preload: 1,
+          transparent: 0,
+          ui_controls: 0,
+          ui_infos: 0,
+          ui_watermark: 0,
+          ui_hint: 0,
+          success: function (api) {
+            apiRef = api;
+            api.start();
+            api.addEventListener("viewerready", function () {
+              apiReady = true;
+              document.body.classList.add("realistic-ready");
+              driveCamera();
+            });
+          },
+          error: function () {
+            iframe.src = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_watermark=0&ui_hint=0";
+          }
+        });
+
+        window.addEventListener("scroll", queueCamera, { passive: true });
+        window.addEventListener("resize", queueCamera);
+      })();
+    </script>
+    <script type="module" src="./src/app.js?v=20260624-13"></script>
   </body>
 </html>
