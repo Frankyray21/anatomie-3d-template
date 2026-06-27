@@ -263,6 +263,7 @@ const materials = {
 };
 
 buildInterface();
+window.__requestBodyParts3D = showBodyPartsAtlas;
 buildLights();
 buildEnvironment();
 buildSkinLayer();
@@ -354,14 +355,7 @@ function buildInterface() {
   }
 
   if (bodyAtlasToggle) {
-    bodyAtlasToggle.addEventListener("click", () => {
-      document.body.classList.remove("has-realistic-reference");
-      bodyAtlasToggle.classList.add("is-active");
-      if (realisticToggle) realisticToggle.classList.remove("is-active");
-      sourceStatus.textContent = "Chargement BodyParts3D";
-      requestValidatedManifest();
-      queueScientificLayersForScroll();
-    });
+    bodyAtlasToggle.addEventListener("click", showBodyPartsAtlas);
   }
 
   rotateToggle.addEventListener("click", () => {
@@ -936,6 +930,15 @@ function registerMesh(mesh, layer, name, data = {}) {
 function mirror(callback) {
   callback(-1);
   callback(1);
+}
+
+function showBodyPartsAtlas() {
+  document.body.classList.remove("has-realistic-reference");
+  if (bodyAtlasToggle) bodyAtlasToggle.classList.add("is-active");
+  if (realisticToggle) realisticToggle.classList.remove("is-active");
+  sourceStatus.textContent = "Chargement BodyParts3D";
+  requestValidatedManifest();
+  queueScientificLayersForScroll();
 }
 
 function requestValidatedManifest() {
