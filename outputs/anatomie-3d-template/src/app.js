@@ -109,40 +109,40 @@ const scrollStops = [
     separation: 0,
     opacity: 0.74,
     rotation: -0.62,
-    camera: new THREE.Vector3(2.8, 1.2, 5.2),
-    target: new THREE.Vector3(0, 0.12, 0)
+    camera: new THREE.Vector3(3.35, 1.32, 6.35),
+    target: new THREE.Vector3(0, 0.06, 0)
   },
   {
     p: 0.22,
     separation: 0.2,
     opacity: 0.84,
     rotation: 0.42,
-    camera: new THREE.Vector3(2.15, 1.6, 4.35),
-    target: new THREE.Vector3(0, 0.56, 0)
+    camera: new THREE.Vector3(3.0, 1.68, 5.85),
+    target: new THREE.Vector3(0, 0.34, 0)
   },
   {
     p: 0.46,
     separation: 0.52,
     opacity: 0.92,
     rotation: 1.18,
-    camera: new THREE.Vector3(3.45, 0.46, 4.0),
-    target: new THREE.Vector3(0.04, -0.12, 0)
+    camera: new THREE.Vector3(4.2, 0.58, 5.45),
+    target: new THREE.Vector3(0.02, -0.04, 0)
   },
   {
     p: 0.7,
     separation: 0.74,
     opacity: 0.94,
     rotation: 2.04,
-    camera: new THREE.Vector3(2.2, 1.0, 3.7),
-    target: new THREE.Vector3(0, 0.22, 0.04)
+    camera: new THREE.Vector3(3.15, 1.08, 5.35),
+    target: new THREE.Vector3(0, 0.14, 0.02)
   },
   {
     p: 1,
     separation: 0.9,
     opacity: 1,
     rotation: 2.78,
-    camera: new THREE.Vector3(3.05, 1.36, 4.75),
-    target: new THREE.Vector3(0, 0.08, 0)
+    camera: new THREE.Vector3(3.75, 1.42, 6.25),
+    target: new THREE.Vector3(0, 0.06, 0)
   }
 ];
 
