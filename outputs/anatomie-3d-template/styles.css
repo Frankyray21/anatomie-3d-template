@@ -26,6 +26,7 @@
 html {
   width: 100%;
   min-height: 100%;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
@@ -119,6 +120,7 @@ button {
 
 .app-shell {
   position: relative;
+  overflow: hidden;
   min-height: 540vh;
   background:
     radial-gradient(circle at 64% 34%, rgba(244, 176, 0, 0.14), transparent 30%),
@@ -203,7 +205,7 @@ body.compat-atlas:not(.webgl-ready) #scene {
 .topbar {
   position: fixed;
   top: 88px;
-  left: clamp(16px, 3vw, 42px);
+  left: max(18px, env(safe-area-inset-left));
   z-index: 6;
   display: flex;
   gap: 8px;
@@ -250,7 +252,7 @@ body.compat-atlas:not(.webgl-ready) #scene {
   display: flex;
   align-items: center;
   min-height: 104vh;
-  padding: 120px clamp(18px, 7vw, 120px);
+  padding: 120px clamp(48px, 8vw, 150px);
 }
 
 .story-step.align-right {
@@ -303,9 +305,9 @@ p {
 
 .story-copy h1,
 .story-copy h2 {
-  max-width: 12ch;
+  max-width: min(12ch, calc(100vw - 160px));
   color: #fff;
-  font-size: clamp(2.65rem, 7.4vw, 6.6rem);
+  font-size: clamp(2.65rem, 6.4vw, 5.8rem);
   line-height: 0.94;
   letter-spacing: 0;
 }
@@ -391,6 +393,12 @@ body.has-realistic-reference .source-pill {
   border-color: rgba(111, 208, 189, 0.52);
   color: #d7fff7;
   background: rgba(111, 208, 189, 0.12);
+}
+
+body.realistic-pending .source-pill {
+  border-color: rgba(111, 208, 189, 0.44);
+  color: #c7fff4;
+  background: rgba(111, 208, 189, 0.1);
 }
 
 body.compat-atlas .status-dot {
