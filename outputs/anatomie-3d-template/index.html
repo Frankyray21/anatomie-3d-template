@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-14" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-15" />
   </head>
   <body class="has-realistic-reference">
     <header class="brand-header">
@@ -27,6 +27,7 @@
           id="realisticAtlas"
           class="realistic-atlas"
           title="Ecorche - Anatomy study par Beatriz Gomez Santamaria"
+          src="https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_watermark=0&ui_hint=0"
           allow="autoplay; fullscreen; xr-spatial-tracking"
           allowfullscreen
           mozallowfullscreen="true"
@@ -596,6 +597,19 @@
         var queuedScroll = false;
         var apiReady = false;
         var apiRef = null;
+        var embedUrl = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=1&ui_watermark=0&ui_hint=0";
+        var readinessTimer = window.setTimeout(function () {
+          if (apiReady || !document.body.classList.contains("has-realistic-reference")) return;
+          document.body.classList.remove("has-realistic-reference");
+          document.body.classList.add("realistic-unavailable");
+          var status = document.getElementById("sourceStatus");
+          var toggle = document.getElementById("bodyAtlasToggle");
+          var realistic = document.getElementById("realisticToggle");
+          if (status) status.textContent = "Atlas local BodyParts3D";
+          if (toggle) toggle.classList.add("is-active");
+          if (realistic) realistic.classList.remove("is-active");
+          if (window.__requestBodyParts3D) window.__requestBodyParts3D();
+        }, 6500);
         var cameraStops = [
           { eye: [3.4, 0.3, 6.0], target: [0.0, 0.02, 0.0] },
           { eye: [2.7, 1.0, 5.7], target: [0.0, 0.16, 0.0] },
@@ -639,7 +653,11 @@
           var end = cameraStops[index + 1];
           var target = vectorMix(start.target, end.target, t);
           var eye = responsiveEye(vectorMix(start.eye, end.eye, t), target);
-          apiRef.setCameraLookAt(eye, target, 0.85);
+          try {
+            apiRef.setCameraLookAt(eye, target, 0.85);
+          } catch (error) {
+            apiReady = false;
+          }
         }
 
         function queueCamera() {
@@ -661,12 +679,13 @@
             api.start();
             api.addEventListener("viewerready", function () {
               apiReady = true;
+              window.clearTimeout(readinessTimer);
               document.body.classList.add("realistic-ready");
               driveCamera();
             });
           },
           error: function () {
-            iframe.src = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=0&ui_watermark=0&ui_hint=0";
+            iframe.src = embedUrl;
           }
         });
 
@@ -674,6 +693,6 @@
         window.addEventListener("resize", queueCamera);
       })();
     </script>
-    <script type="module" src="./src/app.js?v=20260624-14"></script>
+    <script type="module" src="./src/app.js?v=20260624-15"></script>
   </body>
 </html>
