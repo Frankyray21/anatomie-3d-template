@@ -1,6 +1,6 @@
 # Atlas anatomique 3D anime
 
-Experience Three.js Machines Roger International pour presenter un atlas BodyParts3D en ouverture animee, puis en couches synchronisees au scroll: os, muscles, tendons, nerfs, vaisseaux et peau translucide.
+Experience WebGL Machines Roger International pour presenter un corps ecorche realiste en ouverture animee, puis un atlas scientifique BodyParts3D activable en couches synchronisees au scroll: os, muscles, tendons, nerfs, vaisseaux et peau translucide.
 
 ## Lancer
 
@@ -30,7 +30,10 @@ https://frankyray21.github.io/anatomie-3d-template/
 
 ## Fidelite scientifique
 
-La version de production charge des maillages officiels BodyParts3D / Anatomography depuis `assets/bodyparts3d/`.
+La version de production combine deux sources:
+
+- Ouverture realiste: `Ecorche - Anatomy study` par Beatriz Gomez Santamaria, licence CC Attribution, affiche via Sketchfab WebGL.
+- Atlas scientifique: maillages officiels BodyParts3D / Anatomography depuis `assets/bodyparts3d/`.
 
 Source: BodyParts3D est une base 3D Homo sapiens du Database Center for Life Science. Elle associe des concepts anatomiques FMA a des structures 3D d'un modele corps entier d'homme adulte. Les fichiers de ce projet sont derives des paquets OBJ officiels reduits a 99%.
 
@@ -69,3 +72,13 @@ Pages officielles:
 
 - https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html
 - https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html
+
+## Attribution Sketchfab
+
+Mode d'ouverture realiste:
+
+`Ecorche - Anatomy study` by Beatriz Gomez Santamaria, licensed under CC Attribution.
+
+Page source:
+
+- https://sketchfab.com/3d-models/ecorche-anatomy-study-e402d3d541eb4b199c57d5410f5d3c57

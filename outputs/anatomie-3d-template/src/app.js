@@ -11,6 +11,9 @@ const selectedNote = document.querySelector("#selectedNote");
 const sourceStatus = document.querySelector("#sourceStatus");
 const labelLayer = document.querySelector("#labelLayer");
 const loadingState = document.querySelector("#loadingState");
+const realisticAtlas = document.querySelector("#realisticAtlas");
+const realisticToggle = document.querySelector("#realisticToggle");
+const bodyAtlasToggle = document.querySelector("#bodyAtlasToggle");
 const rotateToggle = document.querySelector("#rotateToggle");
 const tourToggle = document.querySelector("#tourToggle");
 const resetView = document.querySelector("#resetView");
@@ -230,6 +233,7 @@ let manifestTargetHeight = 3.35;
 let manifestReplaceDemo = false;
 let manifestLoadedCount = 0;
 let importedRootNormalized = false;
+let manifestRequested = false;
 const layerAssetMap = new Map();
 const assetLoadState = new Map();
 let assetQueue = Promise.resolve();
@@ -269,7 +273,7 @@ buildNerveLayer();
 buildVesselLayer();
 buildScanPlane();
 createLabels();
-loadValidatedManifest();
+if (!realisticAtlas) requestValidatedManifest();
 handleScroll();
 updateLayerState();
 window.__anatomyAppReady = true;
@@ -335,6 +339,30 @@ function buildInterface() {
   speedSlider.addEventListener("input", () => {
     state.speed = Number(speedSlider.value);
   });
+
+  if (realisticToggle) {
+    realisticToggle.addEventListener("click", () => {
+      document.body.classList.add("has-realistic-reference");
+      realisticToggle.classList.add("is-active");
+      if (bodyAtlasToggle) bodyAtlasToggle.classList.remove("is-active");
+      sourceStatus.textContent = "Mode realiste CC BY";
+      selectedName.textContent = "Ecorche - Anatomy study";
+      selectedSystem.textContent = "Mode ouverture realiste";
+      selectedNote.textContent =
+        "Mode realiste par Beatriz Gomez Santamaria, CC Attribution. BodyParts3D reste disponible comme atlas scientifique.";
+    });
+  }
+
+  if (bodyAtlasToggle) {
+    bodyAtlasToggle.addEventListener("click", () => {
+      document.body.classList.remove("has-realistic-reference");
+      bodyAtlasToggle.classList.add("is-active");
+      if (realisticToggle) realisticToggle.classList.remove("is-active");
+      sourceStatus.textContent = "Chargement BodyParts3D";
+      requestValidatedManifest();
+      queueScientificLayersForScroll();
+    });
+  }
 
   rotateToggle.addEventListener("click", () => {
     state.autoRotate = !state.autoRotate;
@@ -908,6 +936,12 @@ function registerMesh(mesh, layer, name, data = {}) {
 function mirror(callback) {
   callback(-1);
   callback(1);
+}
+
+function requestValidatedManifest() {
+  if (manifestRequested) return;
+  manifestRequested = true;
+  loadValidatedManifest();
 }
 
 async function loadValidatedManifest() {
