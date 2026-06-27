@@ -196,7 +196,7 @@ body.compat-atlas:not(.webgl-ready) #scene {
   z-index: 3;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(8, 10, 12, 0.85), transparent 38%, rgba(8, 10, 12, 0.44)),
+    linear-gradient(90deg, rgba(8, 10, 12, 0.76), transparent 44%, rgba(8, 10, 12, 0.36)),
     linear-gradient(0deg, rgba(8, 10, 12, 0.8), transparent 36%, rgba(8, 10, 12, 0.42));
 }
 
@@ -305,13 +305,13 @@ p {
 .story-copy h2 {
   max-width: 12ch;
   color: #fff;
-  font-size: clamp(3rem, 8.6vw, 7.8rem);
-  line-height: 0.9;
+  font-size: clamp(2.65rem, 7.4vw, 6.6rem);
+  line-height: 0.94;
   letter-spacing: 0;
 }
 
 .story-copy h2 {
-  font-size: clamp(2.2rem, 6vw, 5.2rem);
+  font-size: clamp(2rem, 5.1vw, 4.5rem);
 }
 
 .story-copy p:last-child {
@@ -794,7 +794,7 @@ input[type="range"] {
 
   .story-step {
     min-height: 100svh;
-    padding: 112px 18px 42svh;
+    padding: 104px 18px 50svh;
     align-items: flex-start;
   }
 
@@ -821,14 +821,14 @@ input[type="range"] {
 
   .story-copy h1,
   .story-copy h2 {
-    max-width: 10ch;
-    font-size: clamp(2.25rem, 13vw, 4rem);
-    line-height: 0.94;
+    max-width: 12ch;
+    font-size: clamp(1.95rem, 10vw, 3.35rem);
+    line-height: 1;
   }
 
   .story-copy p:last-child {
     margin-top: 12px;
-    font-size: 0.98rem;
+    font-size: 0.9rem;
   }
 
   body.compat-atlas .story-copy h1,

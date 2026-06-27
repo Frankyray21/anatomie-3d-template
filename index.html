@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260624-13" />
+    <link rel="stylesheet" href="./styles.css?v=20260624-14" />
   </head>
   <body class="has-realistic-reference">
     <header class="brand-header">
@@ -597,11 +597,11 @@
         var apiReady = false;
         var apiRef = null;
         var cameraStops = [
-          { eye: [2.2, 0.2, 4.0], target: [0.0, 0.0, 0.0] },
-          { eye: [0.4, 0.8, 3.2], target: [0.0, 0.25, 0.0] },
-          { eye: [-2.3, 0.1, 3.4], target: [0.0, 0.0, 0.0] },
-          { eye: [1.2, 1.5, 2.9], target: [0.0, 0.35, 0.0] },
-          { eye: [2.8, 0.35, 3.6], target: [0.0, 0.05, 0.0] }
+          { eye: [3.4, 0.3, 6.0], target: [0.0, 0.02, 0.0] },
+          { eye: [2.7, 1.0, 5.7], target: [0.0, 0.16, 0.0] },
+          { eye: [-3.5, 0.2, 5.9], target: [0.0, 0.02, 0.0] },
+          { eye: [2.8, 1.45, 5.6], target: [0.0, 0.2, 0.0] },
+          { eye: [3.7, 0.45, 6.2], target: [0.0, 0.04, 0.0] }
         ];
 
         function mix(a, b, t) {
@@ -612,6 +612,20 @@
           return [mix(a[0], b[0], t), mix(a[1], b[1], t), mix(a[2], b[2], t)];
         }
 
+        function smoothStep(t) {
+          return t * t * (3 - 2 * t);
+        }
+
+        function responsiveEye(eye, target) {
+          var width = window.innerWidth || document.documentElement.clientWidth || 1280;
+          var scale = width < 720 ? 1.46 : width < 1100 ? 1.22 : 1;
+          return [
+            target[0] + (eye[0] - target[0]) * scale,
+            target[1] + (eye[1] - target[1]) * scale,
+            target[2] + (eye[2] - target[2]) * scale
+          ];
+        }
+
         function driveCamera() {
           queuedScroll = false;
           if (!apiReady || !document.body.classList.contains("has-realistic-reference")) return;
@@ -620,10 +634,12 @@
           var progress = Math.max(0, Math.min(1, (window.pageYOffset || doc.scrollTop || 0) / maxScroll));
           var scaled = progress * (cameraStops.length - 1);
           var index = Math.min(cameraStops.length - 2, Math.floor(scaled));
-          var t = scaled - index;
+          var t = smoothStep(scaled - index);
           var start = cameraStops[index];
           var end = cameraStops[index + 1];
-          apiRef.setCameraLookAt(vectorMix(start.eye, end.eye, t), vectorMix(start.target, end.target, t), 0.45);
+          var target = vectorMix(start.target, end.target, t);
+          var eye = responsiveEye(vectorMix(start.eye, end.eye, t), target);
+          apiRef.setCameraLookAt(eye, target, 0.85);
         }
 
         function queueCamera() {
@@ -658,6 +674,6 @@
         window.addEventListener("resize", queueCamera);
       })();
     </script>
-    <script type="module" src="./src/app.js?v=20260624-13"></script>
+    <script type="module" src="./src/app.js?v=20260624-14"></script>
   </body>
 </html>
