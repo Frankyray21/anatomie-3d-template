@@ -28,11 +28,11 @@ const isCompactScreen = window.matchMedia("(max-width: 820px)").matches;
 const mobileRenderMode = isTouchFirst || isCompactScreen;
 const enableHoverPicking = !isTouchFirst && !mobileRenderMode;
 const enableSceneLabels = !mobileRenderMode;
-const atlasCameraDistance = mobileRenderMode ? 0.86 : 0.76;
+const atlasCameraDistance = mobileRenderMode ? 0.78 : 0.66;
 const atlasCameraLift = mobileRenderMode ? 0.98 : 0.94;
-const atlasFinalScale = mobileRenderMode ? 1.28 : 1.42;
-const atlasIntroScale = mobileRenderMode ? 0.2 : 0.24;
-const atlasXOffset = mobileRenderMode ? 0 : 0.38;
+const atlasFinalScale = mobileRenderMode ? 1.44 : 1.62;
+const atlasIntroScale = mobileRenderMode ? 0.24 : 0.28;
+const atlasXOffset = mobileRenderMode ? 0 : 0.46;
 const detail = mobileRenderMode
   ? {
       capsuleCap: 7,
@@ -1168,7 +1168,7 @@ function render(timestamp = 0) {
   updateLayerState();
 
   if (state.autoRotate) {
-    state.spin += delta * 0.18 * speed;
+    state.spin += delta * 0.32 * speed;
   }
 
   anatomyRoot.rotation.y = state.scrollRotation + state.spin + (1 - intro) * -1.85;
