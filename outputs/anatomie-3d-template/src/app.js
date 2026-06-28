@@ -28,6 +28,11 @@ const isCompactScreen = window.matchMedia("(max-width: 820px)").matches;
 const mobileRenderMode = isTouchFirst || isCompactScreen;
 const enableHoverPicking = !isTouchFirst && !mobileRenderMode;
 const enableSceneLabels = !mobileRenderMode;
+const atlasCameraDistance = mobileRenderMode ? 0.9 : 0.84;
+const atlasCameraLift = mobileRenderMode ? 0.98 : 0.94;
+const atlasFinalScale = mobileRenderMode ? 1.18 : 1.28;
+const atlasIntroScale = mobileRenderMode ? 0.16 : 0.18;
+const atlasXOffset = mobileRenderMode ? 0 : 0.32;
 const detail = mobileRenderMode
   ? {
       capsuleCap: 7,
@@ -103,13 +108,17 @@ const state = {
   selected: null
 };
 
+function atlasCameraPose(x, y, z) {
+  return new THREE.Vector3(x * atlasCameraDistance, y * atlasCameraLift, z * atlasCameraDistance);
+}
+
 const scrollStops = [
   {
     p: 0,
     separation: 0,
     opacity: 0.74,
     rotation: -0.62,
-    camera: new THREE.Vector3(3.35, 1.32, 6.35),
+    camera: atlasCameraPose(3.35, 1.32, 6.35),
     target: new THREE.Vector3(0, 0.06, 0)
   },
   {
@@ -117,7 +126,7 @@ const scrollStops = [
     separation: 0.2,
     opacity: 0.84,
     rotation: 0.42,
-    camera: new THREE.Vector3(3.0, 1.68, 5.85),
+    camera: atlasCameraPose(3.0, 1.68, 5.85),
     target: new THREE.Vector3(0, 0.34, 0)
   },
   {
@@ -125,7 +134,7 @@ const scrollStops = [
     separation: 0.52,
     opacity: 0.92,
     rotation: 1.18,
-    camera: new THREE.Vector3(4.2, 0.58, 5.45),
+    camera: atlasCameraPose(4.2, 0.58, 5.45),
     target: new THREE.Vector3(0.02, -0.04, 0)
   },
   {
@@ -133,7 +142,7 @@ const scrollStops = [
     separation: 0.74,
     opacity: 0.94,
     rotation: 2.04,
-    camera: new THREE.Vector3(3.15, 1.08, 5.35),
+    camera: atlasCameraPose(3.15, 1.08, 5.35),
     target: new THREE.Vector3(0, 0.14, 0.02)
   },
   {
@@ -141,7 +150,7 @@ const scrollStops = [
     separation: 0.9,
     opacity: 1,
     rotation: 2.78,
-    camera: new THREE.Vector3(3.75, 1.42, 6.25),
+    camera: atlasCameraPose(3.75, 1.42, 6.25),
     target: new THREE.Vector3(0, 0.06, 0)
   }
 ];
@@ -150,8 +159,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color("#111214");
 scene.fog = new THREE.Fog("#111214", 5.2, 9.5);
 
-const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.01, 100);
-camera.position.set(3.2, 1.45, 4.8);
+const camera = new THREE.PerspectiveCamera(mobileRenderMode ? 42 : 38, window.innerWidth / window.innerHeight, 0.01, 100);
+camera.position.copy(scrollStops[0].camera);
 
 let renderer;
 
@@ -370,8 +379,8 @@ function buildInterface() {
   });
 
   resetView.addEventListener("click", () => {
-    camera.position.set(3.2, 1.45, 4.8);
-    controls.target.set(0, 0.08, 0);
+    camera.position.copy(scrollStops[0].camera);
+    controls.target.copy(scrollStops[0].target);
     controls.update();
     state.separation = 0.34;
     separationSlider.value = "0.34";
@@ -1016,7 +1025,7 @@ function enqueueAssetLoad(asset) {
       sourceStatus.textContent = `Atlas BodyParts3D actif (${manifestLoadedCount}/${(validatedManifest.assets || []).length})`;
     })
     .catch((error) => {
-      sourceStatus.textContent = `Erreur de chargement: ${asset.name || asset.layer}`;
+      sourceStatus.textContent = `Atlas BodyParts3D partiel (${manifestLoadedCount}/${(validatedManifest.assets || []).length})`;
       console.warn("Asset BodyParts3D non charge", asset, error);
     });
 
@@ -1163,8 +1172,9 @@ function render(timestamp = 0) {
   }
 
   anatomyRoot.rotation.y = state.scrollRotation + state.spin + (1 - intro) * -1.85;
-  anatomyRoot.scale.setScalar(THREE.MathUtils.lerp(0.08, 1, intro));
-  anatomyRoot.position.y = THREE.MathUtils.lerp(-1.1, 0, intro);
+  anatomyRoot.scale.setScalar(THREE.MathUtils.lerp(atlasIntroScale, atlasFinalScale, intro));
+  anatomyRoot.position.x = THREE.MathUtils.lerp(0, atlasXOffset, intro);
+  anatomyRoot.position.y = THREE.MathUtils.lerp(-0.95, 0, intro);
 
   camera.position.lerp(pose.camera, 0.08);
   controls.target.lerp(pose.target, 0.08);
