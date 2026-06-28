@@ -204,7 +204,7 @@ body.compat-atlas:not(.webgl-ready) #scene {
 
 body.has-realistic-reference .anatomy-motion,
 body.compat-atlas .anatomy-motion {
-  opacity: 0.82;
+  opacity: 0.9;
 }
 
 .motion-ring,
@@ -226,7 +226,7 @@ body.compat-atlas .anatomy-motion {
   border-radius: 50%;
   filter: drop-shadow(0 0 14px rgba(111, 208, 189, 0.1));
   transform: translate(-50%, -50%) rotateX(68deg) rotateZ(0deg);
-  animation: motionRing 7.5s linear infinite;
+  animation: motionRing 4.8s linear infinite;
 }
 
 .motion-ring-b {
@@ -234,7 +234,7 @@ body.compat-atlas .anatomy-motion {
   height: min(58vh, 620px);
   border-color: rgba(244, 176, 0, 0.2);
   border-top-color: rgba(111, 208, 189, 0.38);
-  animation-duration: 5.8s;
+  animation-duration: 3.7s;
   animation-direction: reverse;
 }
 
@@ -244,7 +244,7 @@ body.compat-atlas .anatomy-motion {
   background: linear-gradient(180deg, transparent, rgba(111, 208, 189, 0.52), rgba(244, 176, 0, 0.38), transparent);
   box-shadow: 0 0 28px rgba(111, 208, 189, 0.28);
   transform: translate(-50%, -50%);
-  animation: motionScan 3.2s ease-in-out infinite;
+  animation: motionScan 2.25s ease-in-out infinite;
 }
 
 .motion-slice {
@@ -253,7 +253,7 @@ body.compat-atlas .anatomy-motion {
   background: linear-gradient(90deg, transparent, rgba(244, 176, 0, 0.48), rgba(111, 208, 189, 0.54), transparent);
   box-shadow: 0 0 18px rgba(244, 176, 0, 0.18);
   transform: translate(-50%, -50%);
-  animation: motionSlice 4.2s ease-in-out infinite;
+  animation: motionSlice 3.1s ease-in-out infinite;
 }
 
 .motion-slice-b {

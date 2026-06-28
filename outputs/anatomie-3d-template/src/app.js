@@ -28,11 +28,11 @@ const isCompactScreen = window.matchMedia("(max-width: 820px)").matches;
 const mobileRenderMode = isTouchFirst || isCompactScreen;
 const enableHoverPicking = !isTouchFirst && !mobileRenderMode;
 const enableSceneLabels = !mobileRenderMode;
-const atlasCameraDistance = mobileRenderMode ? 0.78 : 0.66;
+const atlasCameraDistance = mobileRenderMode ? 0.68 : 0.52;
 const atlasCameraLift = mobileRenderMode ? 0.98 : 0.94;
-const atlasFinalScale = mobileRenderMode ? 1.44 : 1.62;
-const atlasIntroScale = mobileRenderMode ? 0.24 : 0.28;
-const atlasXOffset = mobileRenderMode ? 0 : 0.46;
+const atlasFinalScale = mobileRenderMode ? 1.68 : 1.95;
+const atlasIntroScale = mobileRenderMode ? 0.32 : 0.38;
+const atlasXOffset = mobileRenderMode ? 0 : 0.52;
 const detail = mobileRenderMode
   ? {
       capsuleCap: 7,
@@ -1168,13 +1168,14 @@ function render(timestamp = 0) {
   updateLayerState();
 
   if (state.autoRotate) {
-    state.spin += delta * 0.32 * speed;
+    state.spin += delta * 0.58 * speed;
   }
 
+  const bodyPulse = state.autoRotate ? 1 + Math.sin(elapsed * 0.92 * speed) * 0.045 : 1;
   anatomyRoot.rotation.y = state.scrollRotation + state.spin + (1 - intro) * -1.85;
-  anatomyRoot.scale.setScalar(THREE.MathUtils.lerp(atlasIntroScale, atlasFinalScale, intro));
+  anatomyRoot.scale.setScalar(THREE.MathUtils.lerp(atlasIntroScale, atlasFinalScale, intro) * bodyPulse);
   anatomyRoot.position.x = THREE.MathUtils.lerp(0, atlasXOffset, intro);
-  anatomyRoot.position.y = THREE.MathUtils.lerp(-0.95, 0, intro);
+  anatomyRoot.position.y = THREE.MathUtils.lerp(-0.95, Math.sin(elapsed * 0.78 * speed) * 0.06, intro);
 
   camera.position.lerp(pose.camera, 0.08);
   controls.target.lerp(pose.target, 0.08);
