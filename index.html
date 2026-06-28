@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260627-2" />
+    <link rel="stylesheet" href="./styles.css?v=20260628-1" />
   </head>
   <body class="realistic-pending">
     <header class="brand-header">
@@ -622,6 +622,9 @@
         var apiRef = null;
         var baseCamera = null;
         var baseDistance = 1;
+        var rotationFrame = null;
+        var rotationPhase = 0;
+        var lastRotationTime = 0;
         var embedUrl = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=1&ui_watermark=0&ui_hint=0";
         var readinessTimer = window.setTimeout(function () {
           if (apiReady) return;
@@ -653,7 +656,7 @@
 
         function zoomScale() {
           var width = window.innerWidth || document.documentElement.clientWidth || 1280;
-          return width < 720 ? 1.08 : width < 1100 ? 0.9 : 0.72;
+          return width < 720 ? 0.82 : width < 1100 ? 0.64 : 0.46;
         }
 
         function rotateY(vector, radians) {
@@ -677,7 +680,7 @@
             baseCamera.position[1] - baseCamera.target[1],
             baseCamera.position[2] - baseCamera.target[2]
           ];
-          var rotated = rotateY(direction, stop.yaw);
+          var rotated = rotateY(direction, stop.yaw + rotationPhase);
           var scale = zoomScale() * stop.distance;
           return {
             eye: [
@@ -689,7 +692,7 @@
           };
         }
 
-        function driveCamera(immediate) {
+        function driveCamera(immediate, duration) {
           queuedScroll = false;
           if (!apiReady || !baseCamera) return;
           var doc = document.documentElement;
@@ -705,7 +708,7 @@
           var target = vectorMix(startCamera.target, endCamera.target, t);
           var eye = vectorMix(startCamera.eye, endCamera.eye, t);
           try {
-            apiRef.setCameraLookAt(eye, target, immediate ? 0 : 0.85);
+            apiRef.setCameraLookAt(eye, target, immediate ? 0 : duration || 0.62);
           } catch (error) {
             apiReady = false;
           }
@@ -714,7 +717,26 @@
         function queueCamera() {
           if (queuedScroll) return;
           queuedScroll = true;
-          window.requestAnimationFrame(driveCamera);
+          window.requestAnimationFrame(function () {
+            driveCamera(false, 0.42);
+          });
+        }
+
+        function startRealisticRotation() {
+          if (rotationFrame) return;
+          var tick = function (time) {
+            if (!apiReady || !baseCamera || !document.body.classList.contains("has-realistic-reference")) {
+              rotationFrame = null;
+              return;
+            }
+            if (!lastRotationTime) lastRotationTime = time;
+            var delta = Math.min(64, time - lastRotationTime);
+            lastRotationTime = time;
+            rotationPhase = (rotationPhase + delta * 0.00024) % (Math.PI * 2);
+            driveCamera(false, 0.18);
+            rotationFrame = window.requestAnimationFrame(tick);
+          };
+          rotationFrame = window.requestAnimationFrame(tick);
         }
 
         window.__showRealisticAtlas = function () {
@@ -731,7 +753,9 @@
           if (status) status.textContent = "Mode realiste CC BY";
           if (toggle) toggle.classList.remove("is-active");
           if (realistic) realistic.classList.add("is-active");
+          lastRotationTime = 0;
           driveCamera(true);
+          startRealisticRotation();
           return true;
         };
 
@@ -809,6 +833,6 @@
         window.addEventListener("resize", queueCamera);
       })();
     </script>
-    <script type="module" src="./src/app.js?v=20260627-2"></script>
+    <script type="module" src="./src/app.js?v=20260628-1"></script>
   </body>
 </html>
