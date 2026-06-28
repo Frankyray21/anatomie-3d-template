@@ -192,6 +192,75 @@ body.compat-atlas:not(.webgl-ready) #scene {
   opacity: 0;
 }
 
+.anatomy-motion {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 520ms ease;
+}
+
+body.has-realistic-reference .anatomy-motion,
+body.compat-atlas .anatomy-motion {
+  opacity: 0.82;
+}
+
+.motion-ring,
+.motion-slice,
+.motion-scan {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: block;
+  pointer-events: none;
+}
+
+.motion-ring {
+  width: min(36vw, 520px);
+  height: min(72vh, 760px);
+  border: 1px solid rgba(111, 208, 189, 0.24);
+  border-left-color: rgba(244, 176, 0, 0.42);
+  border-right-color: rgba(95, 169, 214, 0.28);
+  border-radius: 50%;
+  filter: drop-shadow(0 0 14px rgba(111, 208, 189, 0.1));
+  transform: translate(-50%, -50%) rotateX(68deg) rotateZ(0deg);
+  animation: motionRing 7.5s linear infinite;
+}
+
+.motion-ring-b {
+  width: min(30vw, 420px);
+  height: min(58vh, 620px);
+  border-color: rgba(244, 176, 0, 0.2);
+  border-top-color: rgba(111, 208, 189, 0.38);
+  animation-duration: 5.8s;
+  animation-direction: reverse;
+}
+
+.motion-scan {
+  width: 2px;
+  height: min(70vh, 720px);
+  background: linear-gradient(180deg, transparent, rgba(111, 208, 189, 0.52), rgba(244, 176, 0, 0.38), transparent);
+  box-shadow: 0 0 28px rgba(111, 208, 189, 0.28);
+  transform: translate(-50%, -50%);
+  animation: motionScan 3.2s ease-in-out infinite;
+}
+
+.motion-slice {
+  width: min(28vw, 420px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(244, 176, 0, 0.48), rgba(111, 208, 189, 0.54), transparent);
+  box-shadow: 0 0 18px rgba(244, 176, 0, 0.18);
+  transform: translate(-50%, -50%);
+  animation: motionSlice 4.2s ease-in-out infinite;
+}
+
+.motion-slice-b {
+  width: min(22vw, 330px);
+  animation-delay: -2.1s;
+}
+
 .vignette {
   position: absolute;
   inset: 0;
@@ -724,6 +793,38 @@ input[type="range"] {
   }
 }
 
+@keyframes motionRing {
+  to {
+    transform: translate(-50%, -50%) rotateX(68deg) rotateZ(360deg);
+  }
+}
+
+@keyframes motionScan {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translate(calc(-50% - min(12vw, 170px)), -50%);
+  }
+
+  50% {
+    opacity: 0.78;
+    transform: translate(calc(-50% + min(12vw, 170px)), -50%);
+  }
+}
+
+@keyframes motionSlice {
+  0%,
+  100% {
+    opacity: 0.16;
+    transform: translate(-50%, calc(-50% - min(20vh, 190px))) scaleX(0.72);
+  }
+
+  50% {
+    opacity: 0.62;
+    transform: translate(-50%, calc(-50% + min(20vh, 190px))) scaleX(1.04);
+  }
+}
+
 @media (max-width: 960px) {
   .vignette {
     background:
@@ -747,6 +848,24 @@ input[type="range"] {
 }
 
 @media (max-width: 820px) {
+  .motion-ring {
+    width: min(58vw, 300px);
+    height: min(58svh, 520px);
+  }
+
+  .motion-ring-b {
+    width: min(48vw, 250px);
+    height: min(48svh, 430px);
+  }
+
+  .motion-scan {
+    height: min(54svh, 480px);
+  }
+
+  .motion-slice {
+    width: min(52vw, 270px);
+  }
+
   body.compat-atlas .app-shell {
     min-height: 500svh;
     background: #0d1013;

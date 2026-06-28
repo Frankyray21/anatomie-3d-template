@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260628-1" />
+    <link rel="stylesheet" href="./styles.css?v=20260628-2" />
   </head>
   <body class="realistic-pending">
     <header class="brand-header">
@@ -35,6 +35,13 @@
         </iframe>
         <canvas id="fallbackScene" aria-hidden="true"></canvas>
         <canvas id="scene" aria-label="Vue 3D animee du corps humain"></canvas>
+        <div class="anatomy-motion" aria-hidden="true">
+          <span class="motion-ring motion-ring-a"></span>
+          <span class="motion-ring motion-ring-b"></span>
+          <span class="motion-scan"></span>
+          <span class="motion-slice motion-slice-a"></span>
+          <span class="motion-slice motion-slice-b"></span>
+        </div>
         <div class="vignette" aria-hidden="true"></div>
       </div>
 
@@ -624,6 +631,7 @@
         var baseDistance = 1;
         var rotationFrame = null;
         var rotationPhase = 0;
+        var motionPhase = 0;
         var lastRotationTime = 0;
         var embedUrl = "https://sketchfab.com/models/e402d3d541eb4b199c57d5410f5d3c57/embed?autostart=1&preload=1&ui_infos=0&ui_controls=1&ui_watermark=0&ui_hint=0";
         var readinessTimer = window.setTimeout(function () {
@@ -675,13 +683,14 @@
             baseCamera.target[1] + baseDistance * stop.lift,
             baseCamera.target[2]
           ];
+          target[1] += Math.sin(motionPhase * 1.35) * baseDistance * 0.018;
           var direction = [
             baseCamera.position[0] - baseCamera.target[0],
             baseCamera.position[1] - baseCamera.target[1],
             baseCamera.position[2] - baseCamera.target[2]
           ];
           var rotated = rotateY(direction, stop.yaw + rotationPhase);
-          var scale = zoomScale() * stop.distance;
+          var scale = zoomScale() * stop.distance * (1 + Math.sin(motionPhase * 1.08) * 0.04);
           return {
             eye: [
               target[0] + rotated[0] * scale,
@@ -732,8 +741,9 @@
             if (!lastRotationTime) lastRotationTime = time;
             var delta = Math.min(64, time - lastRotationTime);
             lastRotationTime = time;
-            rotationPhase = (rotationPhase + delta * 0.00024) % (Math.PI * 2);
-            driveCamera(false, 0.18);
+            rotationPhase = (rotationPhase + delta * 0.00042) % (Math.PI * 2);
+            motionPhase = (motionPhase + delta * 0.0011) % (Math.PI * 2);
+            driveCamera(false, 0.12);
             rotationFrame = window.requestAnimationFrame(tick);
           };
           rotationFrame = window.requestAnimationFrame(tick);
@@ -833,6 +843,6 @@
         window.addEventListener("resize", queueCamera);
       })();
     </script>
-    <script type="module" src="./src/app.js?v=20260628-1"></script>
+    <script type="module" src="./src/app.js?v=20260628-2"></script>
   </body>
 </html>

@@ -1185,9 +1185,10 @@ function render(timestamp = 0) {
   });
 
   if (scanPlane) {
-    scanPlane.visible = state.scrollProgress > 0.28 || state.tour;
-    scanPlane.position.x = Math.sin(elapsed * 0.7 * speed) * 0.46;
-    scanPlane.material.opacity = 0.08 + Math.sin(elapsed * 1.4 * speed) * 0.03;
+    scanPlane.visible = state.autoRotate || state.scrollProgress > 0.08 || state.tour;
+    scanPlane.position.x = Math.sin(elapsed * 1.18 * speed) * 0.54;
+    scanPlane.position.y = Math.sin(elapsed * 0.72 * speed) * 0.08;
+    scanPlane.material.opacity = 0.11 + Math.sin(elapsed * 1.9 * speed) * 0.045;
   }
 
   controls.update();
