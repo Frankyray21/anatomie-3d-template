@@ -28,11 +28,11 @@ const isCompactScreen = window.matchMedia("(max-width: 820px)").matches;
 const mobileRenderMode = isTouchFirst || isCompactScreen;
 const enableHoverPicking = !isTouchFirst && !mobileRenderMode;
 const enableSceneLabels = !mobileRenderMode;
-const atlasCameraDistance = mobileRenderMode ? 0.9 : 0.84;
+const atlasCameraDistance = mobileRenderMode ? 0.86 : 0.76;
 const atlasCameraLift = mobileRenderMode ? 0.98 : 0.94;
-const atlasFinalScale = mobileRenderMode ? 1.18 : 1.28;
-const atlasIntroScale = mobileRenderMode ? 0.16 : 0.18;
-const atlasXOffset = mobileRenderMode ? 0 : 0.32;
+const atlasFinalScale = mobileRenderMode ? 1.28 : 1.42;
+const atlasIntroScale = mobileRenderMode ? 0.2 : 0.24;
+const atlasXOffset = mobileRenderMode ? 0 : 0.38;
 const detail = mobileRenderMode
   ? {
       capsuleCap: 7,

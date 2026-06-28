@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260627-1" />
+    <link rel="stylesheet" href="./styles.css?v=20260627-2" />
   </head>
   <body class="realistic-pending">
     <header class="brand-header">
@@ -628,11 +628,11 @@
           switchToBodyParts();
         }, 6500);
         var cameraStops = [
-          { yaw: -0.1, lift: 0.02, distance: 1 },
-          { yaw: 0.16, lift: 0.05, distance: 1.08 },
-          { yaw: -0.2, lift: 0.03, distance: 1.14 },
-          { yaw: 0.12, lift: 0.07, distance: 1.11 },
-          { yaw: -0.04, lift: 0.02, distance: 1.18 }
+          { yaw: -0.08, lift: 0.02, distance: 0.96 },
+          { yaw: 0.14, lift: 0.05, distance: 1.02 },
+          { yaw: -0.18, lift: 0.03, distance: 1.08 },
+          { yaw: 0.1, lift: 0.07, distance: 1.04 },
+          { yaw: -0.04, lift: 0.02, distance: 1.1 }
         ];
 
         function mix(a, b, t) {
@@ -653,7 +653,7 @@
 
         function zoomScale() {
           var width = window.innerWidth || document.documentElement.clientWidth || 1280;
-          return width < 720 ? 3.45 : width < 1100 ? 2.95 : 2.55;
+          return width < 720 ? 1.08 : width < 1100 ? 0.9 : 0.72;
         }
 
         function rotateY(vector, radians) {
@@ -809,6 +809,6 @@
         window.addEventListener("resize", queueCamera);
       })();
     </script>
-    <script type="module" src="./src/app.js?v=20260627-1"></script>
+    <script type="module" src="./src/app.js?v=20260627-2"></script>
   </body>
 </html>
