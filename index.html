@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260628-2" />
+    <link rel="stylesheet" href="./styles.css?v=20260628-3" />
   </head>
   <body class="realistic-pending">
     <header class="brand-header">
@@ -664,7 +664,12 @@
 
         function zoomScale() {
           var width = window.innerWidth || document.documentElement.clientWidth || 1280;
-          return width < 720 ? 0.82 : width < 1100 ? 0.64 : 0.46;
+          return width < 720 ? 0.64 : width < 1100 ? 0.48 : 0.34;
+        }
+
+        function closeupPulse() {
+          var wave = Math.max(0, Math.sin(motionPhase * 0.82));
+          return 1 - Math.pow(wave, 2.4) * 0.34;
         }
 
         function rotateY(vector, radians) {
@@ -683,14 +688,15 @@
             baseCamera.target[1] + baseDistance * stop.lift,
             baseCamera.target[2]
           ];
-          target[1] += Math.sin(motionPhase * 1.35) * baseDistance * 0.018;
+          target[0] += Math.sin(motionPhase * 0.55) * baseDistance * 0.018;
+          target[1] += Math.sin(motionPhase * 1.35) * baseDistance * 0.052;
           var direction = [
             baseCamera.position[0] - baseCamera.target[0],
             baseCamera.position[1] - baseCamera.target[1],
             baseCamera.position[2] - baseCamera.target[2]
           ];
           var rotated = rotateY(direction, stop.yaw + rotationPhase);
-          var scale = zoomScale() * stop.distance * (1 + Math.sin(motionPhase * 1.08) * 0.04);
+          var scale = zoomScale() * stop.distance * closeupPulse() * (1 + Math.sin(motionPhase * 1.08) * 0.07);
           return {
             eye: [
               target[0] + rotated[0] * scale,
@@ -741,9 +747,9 @@
             if (!lastRotationTime) lastRotationTime = time;
             var delta = Math.min(64, time - lastRotationTime);
             lastRotationTime = time;
-            rotationPhase = (rotationPhase + delta * 0.00042) % (Math.PI * 2);
-            motionPhase = (motionPhase + delta * 0.0011) % (Math.PI * 2);
-            driveCamera(false, 0.12);
+            rotationPhase = (rotationPhase + delta * 0.00078) % (Math.PI * 2);
+            motionPhase = (motionPhase + delta * 0.00145) % (Math.PI * 2);
+            driveCamera(false, 0.08);
             rotationFrame = window.requestAnimationFrame(tick);
           };
           rotationFrame = window.requestAnimationFrame(tick);
@@ -843,6 +849,6 @@
         window.addEventListener("resize", queueCamera);
       })();
     </script>
-    <script type="module" src="./src/app.js?v=20260628-2"></script>
+    <script type="module" src="./src/app.js?v=20260628-3"></script>
   </body>
 </html>
