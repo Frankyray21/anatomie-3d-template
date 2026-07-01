@@ -97,7 +97,7 @@ const layerConfig = {
 
 const state = {
   autoRotate: true,
-  tour: false,
+  tour: true,
   separation: Number(separationSlider.value),
   globalOpacity: Number(opacitySlider.value),
   speed: Number(speedSlider.value),
@@ -373,9 +373,12 @@ function buildInterface() {
     rotateToggle.classList.toggle("is-active", state.autoRotate);
   });
 
+  tourToggle.classList.toggle("is-active", state.tour);
   tourToggle.addEventListener("click", () => {
     state.tour = !state.tour;
     tourToggle.classList.toggle("is-active", state.tour);
+    queueScientificLayersForScroll();
+    updateLayerState(true);
   });
 
   resetView.addEventListener("click", () => {
@@ -1155,17 +1158,40 @@ function render(timestamp = 0) {
   const intro = easeOut(elapsed / 2.15);
   const pose = scrollPose(state.scrollProgress);
   let targetSeparation = pose.separation;
+  let targetOpacity = pose.opacity;
+  let targetRotation = pose.rotation;
+  const cameraPose = pose.camera.clone();
+  const cameraTarget = pose.target.clone();
 
   if (state.tour) {
-    targetSeparation = THREE.MathUtils.clamp(0.44 + Math.sin(elapsed * 0.75 * speed) * 0.3, 0.08, 0.86);
+    const tourCycle = (elapsed * 0.105 * speed) % 1;
+    const splitWave = Math.abs(Math.sin(elapsed * 0.82 * speed));
+    targetSeparation = THREE.MathUtils.clamp(0.18 + splitWave * 0.78, 0.08, 0.96);
+    targetOpacity = THREE.MathUtils.lerp(0.48, 0.96, 0.5 + Math.sin(elapsed * 0.7 * speed) * 0.5);
+    targetRotation += Math.sin(elapsed * 0.62 * speed) * 0.36;
+
+    if (tourCycle < 0.28) {
+      cameraTarget.y += 0.42;
+      cameraPose.multiplyScalar(0.82);
+    } else if (tourCycle < 0.56) {
+      cameraTarget.y += 0.04;
+      cameraPose.multiplyScalar(0.7);
+    } else if (tourCycle < 0.78) {
+      cameraTarget.y -= 0.36;
+      cameraPose.multiplyScalar(0.78);
+    } else {
+      cameraTarget.y += 0.12;
+      cameraPose.multiplyScalar(0.94);
+    }
+    cameraTarget.x += Math.sin(elapsed * 0.88 * speed) * 0.1;
   }
 
   state.separation = targetSeparation;
-  state.globalOpacity = pose.opacity;
-  state.scrollRotation = pose.rotation;
+  state.globalOpacity = targetOpacity;
+  state.scrollRotation = targetRotation;
   setSliderValue(separationSlider, state.separation);
   setSliderValue(opacitySlider, state.globalOpacity);
-  updateLayerState();
+  updateLayerState(state.tour);
 
   if (state.autoRotate) {
     state.spin += delta * 0.58 * speed;
@@ -1177,8 +1203,14 @@ function render(timestamp = 0) {
   anatomyRoot.position.x = THREE.MathUtils.lerp(0, atlasXOffset, intro);
   anatomyRoot.position.y = THREE.MathUtils.lerp(-0.95, Math.sin(elapsed * 0.78 * speed) * 0.06, intro);
 
-  camera.position.lerp(pose.camera, 0.08);
-  controls.target.lerp(pose.target, 0.08);
+  Object.keys(layerConfig).forEach((key, index) => {
+    const wiggle = state.tour ? Math.sin(elapsed * 1.45 * speed + index * 0.9) * 0.035 : 0;
+    if (layers[key]) layers[key].position.y += wiggle;
+    if (importedLayers[key]) importedLayers[key].position.y += wiggle;
+  });
+
+  camera.position.lerp(cameraPose, state.tour ? 0.11 : 0.08);
+  controls.target.lerp(cameraTarget, state.tour ? 0.11 : 0.08);
 
   animatedParts.forEach((part, index) => {
     const pulse = 1 + Math.sin(elapsed * 2.1 * speed + index * 0.37) * 0.025;

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Machines Roger International | Anatomie 3D</title>
-    <link rel="stylesheet" href="./styles.css?v=20260628-3" />
+    <link rel="stylesheet" href="./styles.css?v=20260630-1" />
   </head>
   <body class="realistic-pending">
     <header class="brand-header">
@@ -645,6 +645,14 @@
           { yaw: 0.1, lift: 0.07, distance: 1.04 },
           { yaw: -0.04, lift: 0.02, distance: 1.1 }
         ];
+        var anatomyTourStops = [
+          { p: 0, yaw: 0, lift: 0.18, zoom: 0.72 },
+          { p: 0.18, yaw: 0.35, lift: 0.08, zoom: 0.46 },
+          { p: 0.38, yaw: -0.42, lift: -0.1, zoom: 0.52 },
+          { p: 0.58, yaw: 0.22, lift: -0.26, zoom: 0.58 },
+          { p: 0.78, yaw: -0.3, lift: 0.02, zoom: 0.4 },
+          { p: 1, yaw: 0, lift: 0.18, zoom: 0.72 }
+        ];
 
         function mix(a, b, t) {
           return a + (b - a) * t;
@@ -672,6 +680,23 @@
           return 1 - Math.pow(wave, 2.4) * 0.34;
         }
 
+        function anatomyTourPose() {
+          var cycle = (motionPhase * 0.12) % 1;
+          for (var i = 0; i < anatomyTourStops.length - 1; i += 1) {
+            var start = anatomyTourStops[i];
+            var end = anatomyTourStops[i + 1];
+            if (cycle <= end.p) {
+              var local = smoothStep((cycle - start.p) / (end.p - start.p));
+              return {
+                yaw: mix(start.yaw, end.yaw, local),
+                lift: mix(start.lift, end.lift, local),
+                zoom: mix(start.zoom, end.zoom, local)
+              };
+            }
+          }
+          return anatomyTourStops[0];
+        }
+
         function rotateY(vector, radians) {
           var c = Math.cos(radians);
           var s = Math.sin(radians);
@@ -683,9 +708,10 @@
         }
 
         function cameraFromStop(stop) {
+          var tour = anatomyTourPose();
           var target = [
             baseCamera.target[0],
-            baseCamera.target[1] + baseDistance * stop.lift,
+            baseCamera.target[1] + baseDistance * (stop.lift + tour.lift),
             baseCamera.target[2]
           ];
           target[0] += Math.sin(motionPhase * 0.55) * baseDistance * 0.018;
@@ -695,8 +721,8 @@
             baseCamera.position[1] - baseCamera.target[1],
             baseCamera.position[2] - baseCamera.target[2]
           ];
-          var rotated = rotateY(direction, stop.yaw + rotationPhase);
-          var scale = zoomScale() * stop.distance * closeupPulse() * (1 + Math.sin(motionPhase * 1.08) * 0.07);
+          var rotated = rotateY(direction, stop.yaw + tour.yaw + rotationPhase);
+          var scale = zoomScale() * stop.distance * tour.zoom * closeupPulse() * (1 + Math.sin(motionPhase * 1.08) * 0.07);
           return {
             eye: [
               target[0] + rotated[0] * scale,
@@ -849,6 +875,6 @@
         window.addEventListener("resize", queueCamera);
       })();
     </script>
-    <script type="module" src="./src/app.js?v=20260628-3"></script>
+    <script type="module" src="./src/app.js?v=20260630-1"></script>
   </body>
 </html>
