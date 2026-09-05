@@ -1,0 +1,409 @@
+{
+  "generatedAt": "2026-09-05T22:09:49.205Z",
+  "sourceDirectory": "assets/bodyparts3d",
+  "outputDirectory": "assets/bodyparts3d",
+  "loaderPath": "vendor/examples/jsm/loaders/OBJLoader.js",
+  "nodeVersion": "v24.16.0",
+  "method": "OBJLoader FLOAT32 output; exact position+normal bitwise deduplication; one indexed primitive per layer; UV omitted; no decimation or transforms",
+  "totals": {
+    "files": 6,
+    "sourceBytes": 153958367,
+    "outputBytes": 50327836,
+    "trianglesBefore": 1984876,
+    "trianglesAfter": 1984876,
+    "seconds": 3.889,
+    "reductionPercent": 67.31
+  },
+  "layers": [
+    {
+      "source": "bp3d-major-muscles.obj",
+      "output": "bp3d-major-muscles.glb",
+      "sourceBytes": 7398363,
+      "outputBytes": 2087940,
+      "reductionPercent": 71.78,
+      "sourceSHA256": "a153d01d31149510a404c875f807b7ac3cb7785945b5bbba9a75487478d80fb5",
+      "outputSHA256": "5956054c630c54a232978fc724f629805d0bea211800e56d0c735cd3984aac4e",
+      "sourceOBJ": {
+        "vertices": 63858,
+        "normals": 63858,
+        "faces": 92404,
+        "triangles": 92404,
+        "cornersWithoutNormal": 0
+      },
+      "inputMeshes": 32,
+      "outputMeshes": 1,
+      "primitives": 1,
+      "trianglesBefore": 92404,
+      "trianglesAfter": 92404,
+      "expandedVerticesBefore": 277212,
+      "indexedVerticesAfter": 63854,
+      "indexType": "UINT16",
+      "boundsBefore": {
+        "min": [
+          -229.86000061035156,
+          -219.35299682617188,
+          32.4640007019043
+        ],
+        "max": [
+          229.86000061035156,
+          -2.7251200675964355,
+          1355.3900146484375
+        ]
+      },
+      "boundsAfter": {
+        "min": [
+          -229.86000061035156,
+          -219.35299682617188,
+          32.4640007019043
+        ],
+        "max": [
+          229.86000061035156,
+          -2.7251200675964355,
+          1355.3900146484375
+        ]
+      },
+      "timingsSeconds": {
+        "parse": 0.119,
+        "exactDeduplication": 0.02,
+        "encodeAndWrite": 0.003,
+        "verification": 0.028,
+        "total": 0.214
+      },
+      "verification": {
+        "headerAndChunks": true,
+        "embeddedBufferOnly": true,
+        "triangleCount": true,
+        "triangleOrderAndWinding": true,
+        "positionsBitExact": true,
+        "normalsBitExact": true,
+        "boundsExact": true,
+        "sourceUnchanged": true
+      }
+    },
+    {
+      "source": "bp3d-major-vessels.obj",
+      "output": "bp3d-major-vessels.glb",
+      "sourceBytes": 50926643,
+      "outputBytes": 16599160,
+      "reductionPercent": 67.41,
+      "sourceSHA256": "25579137d4cf1287cd6e561de4ed8f79d9f509ec91c7de3dff1fbc2b64124a19",
+      "outputSHA256": "71d89e1222f8bb032e40dcc810f81dabb22a980677227fc167ca8e123ce60263",
+      "sourceOBJ": {
+        "vertices": 367208,
+        "normals": 367208,
+        "faces": 649528,
+        "triangles": 649528,
+        "cornersWithoutNormal": 0
+      },
+      "inputMeshes": 496,
+      "outputMeshes": 1,
+      "primitives": 1,
+      "trianglesBefore": 649528,
+      "trianglesAfter": 649528,
+      "expandedVerticesBefore": 1948584,
+      "indexedVerticesAfter": 366825,
+      "indexType": "UINT32",
+      "boundsBefore": {
+        "min": [
+          -279.51300048828125,
+          -203.2449951171875,
+          -64.4175033569336
+        ],
+        "max": [
+          279.5069885253906,
+          10.068300247192383,
+          1585.050048828125
+        ]
+      },
+      "boundsAfter": {
+        "min": [
+          -279.51300048828125,
+          -203.2449951171875,
+          -64.4175033569336
+        ],
+        "max": [
+          279.5069885253906,
+          10.068300247192383,
+          1585.050048828125
+        ]
+      },
+      "timingsSeconds": {
+        "parse": 0.731,
+        "exactDeduplication": 0.077,
+        "encodeAndWrite": 0.016,
+        "verification": 0.11,
+        "total": 1.229
+      },
+      "verification": {
+        "headerAndChunks": true,
+        "embeddedBufferOnly": true,
+        "triangleCount": true,
+        "triangleOrderAndWinding": true,
+        "positionsBitExact": true,
+        "normalsBitExact": true,
+        "boundsExact": true,
+        "sourceUnchanged": true
+      }
+    },
+    {
+      "source": "bp3d-nervous-system.obj",
+      "output": "bp3d-nervous-system.glb",
+      "sourceBytes": 24506472,
+      "outputBytes": 8176980,
+      "reductionPercent": 66.63,
+      "sourceSHA256": "2c11aeb3f43a979cea4599e64193c0394d270d91e856c7daf64414ad45a1274c",
+      "outputSHA256": "fe446fb8ad19006a9a8169199f15643d69d60a6cf02c56e2c7668218192c2234",
+      "sourceOBJ": {
+        "vertices": 179170,
+        "normals": 179170,
+        "faces": 322990,
+        "triangles": 322990,
+        "cornersWithoutNormal": 0
+      },
+      "inputMeshes": 60,
+      "outputMeshes": 1,
+      "primitives": 1,
+      "trianglesBefore": 322990,
+      "trianglesAfter": 322990,
+      "expandedVerticesBefore": 968970,
+      "indexedVerticesAfter": 179170,
+      "indexType": "UINT32",
+      "boundsBefore": {
+        "min": [
+          -69.94039916992188,
+          -169.677001953125,
+          1458.5999755859375
+        ],
+        "max": [
+          68.89340209960938,
+          10.329299926757812,
+          1630.4599609375
+        ]
+      },
+      "boundsAfter": {
+        "min": [
+          -69.94039916992188,
+          -169.677001953125,
+          1458.5999755859375
+        ],
+        "max": [
+          68.89340209960938,
+          10.329299926757812,
+          1630.4599609375
+        ]
+      },
+      "timingsSeconds": {
+        "parse": 0.365,
+        "exactDeduplication": 0.031,
+        "encodeAndWrite": 0.018,
+        "verification": 0.057,
+        "total": 0.614
+      },
+      "verification": {
+        "headerAndChunks": true,
+        "embeddedBufferOnly": true,
+        "triangleCount": true,
+        "triangleOrderAndWinding": true,
+        "positionsBitExact": true,
+        "normalsBitExact": true,
+        "boundsExact": true,
+        "sourceUnchanged": true
+      }
+    },
+    {
+      "source": "bp3d-skeleton.obj",
+      "output": "bp3d-skeleton.glb",
+      "sourceBytes": 56428556,
+      "outputBytes": 18429872,
+      "reductionPercent": 67.34,
+      "sourceSHA256": "31285580f36234afd120be882bcdb3109cc48bee39bacb89550eb9a8723690cb",
+      "outputSHA256": "5250fa7d578ca5eb9baecff667933791709871eb5de8db1a093879f52f77b051",
+      "sourceOBJ": {
+        "vertices": 413338,
+        "normals": 413338,
+        "faces": 710464,
+        "triangles": 710464,
+        "cornersWithoutNormal": 0
+      },
+      "inputMeshes": 138,
+      "outputMeshes": 1,
+      "primitives": 1,
+      "trianglesBefore": 710464,
+      "trianglesAfter": 710464,
+      "expandedVerticesBefore": 2131392,
+      "indexedVerticesAfter": 412637,
+      "indexType": "UINT32",
+      "boundsBefore": {
+        "min": [
+          -166.46400451660156,
+          -213.83200073242188,
+          751.9509887695312
+        ],
+        "max": [
+          166.46400451660156,
+          18.000999450683594,
+          1636.27001953125
+        ]
+      },
+      "boundsAfter": {
+        "min": [
+          -166.46400451660156,
+          -213.83200073242188,
+          751.9509887695312
+        ],
+        "max": [
+          166.46400451660156,
+          18.000999450683594,
+          1636.27001953125
+        ]
+      },
+      "timingsSeconds": {
+        "parse": 0.836,
+        "exactDeduplication": 0.084,
+        "encodeAndWrite": 0.016,
+        "verification": 0.122,
+        "total": 1.377
+      },
+      "verification": {
+        "headerAndChunks": true,
+        "embeddedBufferOnly": true,
+        "triangleCount": true,
+        "triangleOrderAndWinding": true,
+        "positionsBitExact": true,
+        "normalsBitExact": true,
+        "boundsExact": true,
+        "sourceUnchanged": true
+      }
+    },
+    {
+      "source": "bp3d-skin.obj",
+      "output": "bp3d-skin.glb",
+      "sourceBytes": 14261697,
+      "outputBytes": 4900796,
+      "reductionPercent": 65.64,
+      "sourceSHA256": "fd35e20d10bc5705b56c9fb0830749a8d8e7675df181be38885217da493a7fe8",
+      "outputSHA256": "ce628d38d3fd627cc93fcc29a2e969e6ef14c4fbf710b580bb71165fae302428",
+      "sourceOBJ": {
+        "vertices": 102467,
+        "normals": 102467,
+        "faces": 203382,
+        "triangles": 203382,
+        "cornersWithoutNormal": 0
+      },
+      "inputMeshes": 1,
+      "outputMeshes": 1,
+      "primitives": 1,
+      "trianglesBefore": 203382,
+      "trianglesAfter": 203382,
+      "expandedVerticesBefore": 610146,
+      "indexedVerticesAfter": 102467,
+      "indexType": "UINT32",
+      "boundsBefore": {
+        "min": [
+          -334.1189880371094,
+          -246.7830047607422,
+          -78.11119842529297
+        ],
+        "max": [
+          332.82501220703125,
+          45.24760055541992,
+          1641.3599853515625
+        ]
+      },
+      "boundsAfter": {
+        "min": [
+          -334.1189880371094,
+          -246.7830047607422,
+          -78.11119842529297
+        ],
+        "max": [
+          332.82501220703125,
+          45.24760055541992,
+          1641.3599853515625
+        ]
+      },
+      "timingsSeconds": {
+        "parse": 0.234,
+        "exactDeduplication": 0.02,
+        "encodeAndWrite": 0.006,
+        "verification": 0.039,
+        "total": 0.392
+      },
+      "verification": {
+        "headerAndChunks": true,
+        "embeddedBufferOnly": true,
+        "triangleCount": true,
+        "triangleOrderAndWinding": true,
+        "positionsBitExact": true,
+        "normalsBitExact": true,
+        "boundsExact": true,
+        "sourceUnchanged": true
+      }
+    },
+    {
+      "source": "bp3d-tendons.obj",
+      "output": "bp3d-tendons.glb",
+      "sourceBytes": 436636,
+      "outputBytes": 133088,
+      "reductionPercent": 69.52,
+      "sourceSHA256": "a78e6963bb313e62f194ddb93ae10de7c310f10b813cbc5dd698c51ce8bbb631",
+      "outputSHA256": "27b7730c9a27c788c0d9fb110a8470abb0f8b9800d15e6bf8b7d20a1292f3597",
+      "sourceOBJ": {
+        "vertices": 3977,
+        "normals": 3977,
+        "faces": 6108,
+        "triangles": 6108,
+        "cornersWithoutNormal": 0
+      },
+      "inputMeshes": 6,
+      "outputMeshes": 1,
+      "primitives": 1,
+      "trianglesBefore": 6108,
+      "trianglesAfter": 6108,
+      "expandedVerticesBefore": 18324,
+      "indexedVerticesAfter": 3977,
+      "indexType": "UINT16",
+      "boundsBefore": {
+        "min": [
+          -49.106300354003906,
+          -165.38400268554688,
+          786.6480102539062
+        ],
+        "max": [
+          49.0786018371582,
+          -36.293800354003906,
+          1536.239990234375
+        ]
+      },
+      "boundsAfter": {
+        "min": [
+          -49.106300354003906,
+          -165.38400268554688,
+          786.6480102539062
+        ],
+        "max": [
+          49.0786018371582,
+          -36.293800354003906,
+          1536.239990234375
+        ]
+      },
+      "timingsSeconds": {
+        "parse": 0.008,
+        "exactDeduplication": 0.003,
+        "encodeAndWrite": 0.001,
+        "verification": 0.005,
+        "total": 0.02
+      },
+      "verification": {
+        "headerAndChunks": true,
+        "embeddedBufferOnly": true,
+        "triangleCount": true,
+        "triangleOrderAndWinding": true,
+        "positionsBitExact": true,
+        "normalsBitExact": true,
+        "boundsExact": true,
+        "sourceUnchanged": true
+      }
+    }
+  ]
+}

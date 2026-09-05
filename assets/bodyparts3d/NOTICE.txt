@@ -1,5 +1,11 @@
 BodyParts3D scientific anatomy assets
 
+The GLB siblings are exact indexed conversions of the OBJLoader FLOAT32
+position/normal streams, with no decimation or coordinate changes. UVs are
+omitted because the viewer uses untextured layer materials. See
+CONVERSION-REPORT.json and tools/convert-bodyparts3d.mjs for verification.
+The included scientific selections do not cover every structure of the body.
+
 The OBJ files in this directory were generated from official BodyParts3D
 polygon mesh data reduced at 99%.
 
