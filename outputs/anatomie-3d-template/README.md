@@ -4,6 +4,7 @@ Application WebGL avec atlas local BodyParts3D, couches sélectionnables et réf
 
 ## Interface et animation
 
+- En-tête : logo original de l’application RodBot (`Frankyray21/RodBot`, `icon-512.png`), repris à l’identique dans `assets/img/rodbot-logo.png` à la demande du propriétaire. Le nom Anatomie MRI est conservé.
 - Téléphone : modèle central, commandes tactiles de 44 px, panneau « Couches et réglages » replié. Tablette/ordinateur : panneau latéral quand la largeur le permet.
 - Glisser pour tourner, pincer/molette pour zoomer. Clavier : flèches, +/−, Home pour recentrer.
 - Rotation et parcours sont explicitement activés par l’utilisateur. Un geste, un réglage ou « Recentrer » suspend l’animation. Le redimensionnement conserve l’orientation et adapte le cadrage.

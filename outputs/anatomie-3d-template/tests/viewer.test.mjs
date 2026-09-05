@@ -73,6 +73,16 @@ test('app launches only the local viewer, no background iframe or procedural fal
   for(const match of html.matchAll(/(?:aria-labelledby|for)="([^"]+)"/g)) assert.ok(ids.includes(match[1]),match[1]);
   for(const match of html.matchAll(/(?:src|href)="(\.\/[^"?]+)(?:\?[^" ]*)?"/g)) assert.ok(statSync(new URL(match[1],root)).size>0);
 });
+test('header reuses the original RodBot icon without changing the app identity',()=>{
+  const html=read('index.html');
+  assert.ok(html.includes('src="./assets/img/rodbot-logo.png" alt="" width="40" height="40"'));
+  assert.ok(html.includes('aria-label="Anatomie MRI, accueil"'));
+  assert.ok(html.includes('<strong>Anatomie MRI</strong>'));
+  const logo=readFileSync(new URL('assets/img/rodbot-logo.png',root));
+  assert.equal(createHash('sha256').update(logo).digest('hex'),'04d67d75fa792f351fbeec27f9917a43579aea950db63a621e93c1393f60b611');
+  assert.equal(logo.readUInt32BE(16),512);
+  assert.equal(logo.readUInt32BE(20),512);
+});
 test('render lifecycle preserves manual settings and avoids idle GPU redraws',()=>{
   const app=read('src/app.js');
   assert.ok(app.includes("rotate:false,tour:false"));
