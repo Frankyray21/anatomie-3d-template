@@ -1,6 +1,16 @@
-# Atlas anatomique 3D anime
+# Anatomie MRI — atlas 3D
 
-Experience WebGL Machines Roger International pour presenter un corps ecorche realiste en ouverture animee, puis un atlas scientifique BodyParts3D activable en couches synchronisees au scroll: os, muscles, tendons, nerfs, vaisseaux et peau translucide.
+Application WebGL avec atlas local BodyParts3D, couches sélectionnables et référence Écorché/Sketchfab sur demande. La vue démarre immobile, cadrée sur le corps entier. Les commandes et réglages occupent leurs propres zones, sans couvrir le modèle.
+
+## Interface et animation
+
+- Téléphone : modèle central, commandes tactiles de 44 px, panneau « Couches et réglages » replié. Tablette/ordinateur : panneau latéral quand la largeur le permet.
+- Glisser pour tourner, pincer/molette pour zoomer. Clavier : flèches, +/−, Home pour recentrer.
+- Rotation et parcours sont explicitement activés par l’utilisateur. Un geste, un réglage ou « Recentrer » suspend l’animation. Le redimensionnement conserve l’orientation et adapte le cadrage.
+- Parcours : Corps, Os, Muscles, Réseaux. Chaque étape attend ses couches avant de commencer sa durée d’affichage.
+- Un seul moteur visible ; aucun dessin 2D présenté comme atlas scientifique. L’iframe externe n’existe qu’en mode Écorché et est retirée en revenant à l’atlas.
+- Le rendu local s’arrête quand l’onglet est masqué. Une vue immobile n’est pas redessinée en continu ; les commandes manuelles ne sont plus écrasées à chaque frame.
+- Erreur WebGL/chargement visible et réessayable. Les couches échouées peuvent être relancées.
 
 ## Lancer
 
@@ -32,7 +42,7 @@ https://frankyray21.github.io/anatomie-3d-template/
 
 La version de production combine deux sources:
 
-- Ouverture realiste: `Ecorche - Anatomy study` par Beatriz Gomez Santamaria, licence CC Attribution, affiche via Sketchfab WebGL.
+- Référence facultative : `Ecorche - Anatomy study` par Beatriz Gomez Santamaria, licence CC Attribution, affichée via Sketchfab WebGL seulement sur demande.
 - Atlas scientifique: maillages officiels BodyParts3D / Anatomography depuis `assets/bodyparts3d/`.
 
 Source: BodyParts3D est une base 3D Homo sapiens du Database Center for Life Science. Elle associe des concepts anatomiques FMA a des structures 3D d'un modele corps entier d'homme adulte. Les fichiers de ce projet sont derives des paquets OBJ officiels reduits a 99%.
@@ -46,7 +56,18 @@ Les couches incluses sont optimisees pour mobile:
 - `bp3d-nervous-system.obj`: systeme nerveux, FMA7157.
 - `bp3d-major-vessels.obj`: arbres arteriels/veineux principaux.
 
-Le dataset complet avec tous les muscles et tous les vaisseaux depasse largement une taille confortable pour mobile. Le chargeur utilise donc une strategie progressive: la peau est chargee a l'ouverture, puis les couches lourdes se chargent au scroll ou a l'activation.
+Les fichiers intégrés sont partiels : notamment le squelette et le système nerveux ne couvrent pas tout le corps. Ces limites sont conservées et signalées ; la conversion ne fabrique aucune structure absente. L’écartement est un outil de lecture, pas une position anatomique réelle. Usage pédagogique, pas diagnostique.
+
+La production utilise désormais six GLB indexés, un maillage par couche, sans décimation : **153 958 367 → 50 327 836 octets (−67,31 %)**. Les 1 984 876 triangles, positions et normales FLOAT32 sont conservés. Les OBJ originaux restent disponibles pour la traçabilité. La peau (4,9 Mo) s’affiche d’abord, puis les os demandés (18,4 Mo) ; les autres couches ne sont chargées qu’à leur activation. Ces tailles ne sont pas une mesure de débit ou de FPS sur téléphone.
+
+Reproduire les GLB à partir des OBJ existants, depuis ce dossier :
+
+```powershell
+node --expose-gc tools/convert-bodyparts3d.mjs --source assets/bodyparts3d --output assets/bodyparts3d
+npm run build
+```
+
+Le rapport `assets/bodyparts3d/CONVERSION-REPORT.json` fournit les tailles, triangles, bornes et SHA256. La conversion vérifie chaque coordonnée et normale bit pour bit. Les tests comprennent le décodage des six GLB avec le chargeur réel, le cadrage, le cycle d’animation et les reprises sur erreur. Les tests de comportement utilisent un DOM et une sortie GPU simulés ; aucune mesure de performance ni QA visuelle navigateur n’est revendiquée.
 
 Pour regenerer les fichiers apres avoir telecharge les donnees officielles dans `work/bodyparts3d/`:
 
@@ -60,6 +81,9 @@ node outputs\anatomie-3d-template\tools\build-bodyparts3d-web-assets.mjs
 - `index.html` : structure de l'application et chargement du module principal.
 - `styles.css` : interface responsive.
 - `src/app.js` : scene 3D, animation, selection et chargement des modeles.
+- `src/boot.js` : panneau adaptatif et message d’erreur de démarrage.
+- `src/viewer-state.mjs` : calculs de cadrage, temps d’animation, étapes et visibilité.
+- `tests/` : tests sans installation de dépendances (Node 22 ou ultérieur).
 - `assets/anatomy-manifest.example.json` : exemple d'integration de meshes valides.
 
 ## Attribution BodyParts3D

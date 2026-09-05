@@ -8,8 +8,8 @@
     {
       "layer": "skin",
       "name": "Peau complete BodyParts3D",
-      "path": "./assets/bodyparts3d/bp3d-skin.obj",
-      "type": "obj",
+      "path": "./assets/bodyparts3d/bp3d-skin.glb",
+      "type": "glb",
       "color": "#d99073",
       "opacity": 0.38,
       "rotation": [-1.5707963268, 0, 0],
@@ -19,19 +19,19 @@
     {
       "layer": "skeleton",
       "name": "Squelette BodyParts3D",
-      "path": "./assets/bodyparts3d/bp3d-skeleton.obj",
-      "type": "obj",
+      "path": "./assets/bodyparts3d/bp3d-skeleton.glb",
+      "type": "glb",
       "color": "#efe2c9",
       "opacity": 0.98,
       "rotation": [-1.5707963268, 0, 0],
       "preload": false,
-      "note": "Squelette in vivo FMA23876, fusion de 138 maillages elementaires BodyParts3D."
+      "note": "Sélection osseuse issue de FMA23876, fusion de 138 maillages BodyParts3D. Les fichiers intégrés ne couvrent pas l’ensemble du squelette."
     },
     {
       "layer": "muscles",
       "name": "Grands muscles BodyParts3D",
-      "path": "./assets/bodyparts3d/bp3d-major-muscles.obj",
-      "type": "obj",
+      "path": "./assets/bodyparts3d/bp3d-major-muscles.glb",
+      "type": "glb",
       "color": "#c74d47",
       "opacity": 0.92,
       "rotation": [-1.5707963268, 0, 0],
@@ -41,8 +41,8 @@
     {
       "layer": "tendons",
       "name": "Tendons BodyParts3D",
-      "path": "./assets/bodyparts3d/bp3d-tendons.obj",
-      "type": "obj",
+      "path": "./assets/bodyparts3d/bp3d-tendons.glb",
+      "type": "glb",
       "color": "#e8dcc1",
       "opacity": 0.96,
       "rotation": [-1.5707963268, 0, 0],
@@ -52,19 +52,19 @@
     {
       "layer": "nerves",
       "name": "Systeme nerveux BodyParts3D",
-      "path": "./assets/bodyparts3d/bp3d-nervous-system.obj",
-      "type": "obj",
+      "path": "./assets/bodyparts3d/bp3d-nervous-system.glb",
+      "type": "glb",
       "color": "#f2c94c",
       "opacity": 0.98,
       "rotation": [-1.5707963268, 0, 0],
       "preload": false,
-      "note": "Systeme nerveux FMA7157, fusion de 60 maillages elementaires BodyParts3D."
+      "note": "Sélection issue du système nerveux FMA7157, fusion de 60 maillages BodyParts3D. Les fichiers intégrés ne couvrent pas tous les nerfs du corps."
     },
     {
       "layer": "vessels",
       "name": "Vaisseaux BodyParts3D",
-      "path": "./assets/bodyparts3d/bp3d-major-vessels.obj",
-      "type": "obj",
+      "path": "./assets/bodyparts3d/bp3d-major-vessels.glb",
+      "type": "glb",
       "color": "#5fa9d6",
       "opacity": 0.88,
       "rotation": [-1.5707963268, 0, 0],
